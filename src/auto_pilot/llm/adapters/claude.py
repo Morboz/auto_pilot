@@ -167,25 +167,36 @@ class ClaudeAdapter(BaseLLMAdapter):
         assistant_content = ""
         tool_calls = []
         has_text = False
+        thinking_content = ""
 
         for block in response.content:
-            if block.type == "text":
-                assistant_content += block.text
-                has_text = True
-            elif block.type == "thinking":
-                # MiniMax's thinking block - include if no text blocks
-                if not has_text:
-                    # Store thinking content as fallback
-                    pass
-            elif block.type == "tool_use":
-                tool_calls.append(
-                    ToolCall(
-                        type="tool_call",
-                        name=block.name,
-                        arguments=block.input,
-                        id=block.id,  # Save tool_use_id for later use
+            try:
+                if block.type == "text":
+                    if block.text:
+                        assistant_content += block.text
+                        has_text = True
+                elif block.type == "thinking":
+                    # MiniMax's thinking block - store for fallback
+                    if block.thinking:
+                        thinking_content = block.thinking
+                elif block.type == "tool_use":
+                    tool_calls.append(
+                        ToolCall(
+                            type="tool_call",
+                            name=block.name,
+                            arguments=block.input,
+                            id=block.id,  # Save tool_use_id for later use
+                        )
                     )
-                )
+            except (TypeError, AttributeError) as e:
+                # Handle cases where block attributes might be None
+                print(f"[WARN] Error processing block {block.type}: {e}")
+                continue
+
+        # If no text content but has thinking, use thinking as content
+        # This handles cases where MiniMax returns only thinking blocks
+        if not has_text and thinking_content:
+            assistant_content = thinking_content
 
         # ⚠️ CRITICAL: Save the complete response.content for MiniMax
         # This preserves all blocks (thinking, text, tool_use)
@@ -283,6 +294,25 @@ class ClaudeAdapter(BaseLLMAdapter):
             )
 
             response_obj = self._convert_claude_response(response, messages)
+
+            # Ensure we have content
+            if not response_obj.content:
+                raise InvalidRequestError("Model returned empty content")
+
+            # Clean up content - remove markdown code blocks if present
+            content = response_obj.content.strip()
+            if content.startswith("```"):
+                # Remove markdown code block wrapper
+                lines = content.split("\n")
+                # Remove first line (```json or ```)
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                # Remove last line (```)
+                if lines and lines[-1].strip() == "```":
+                    lines = lines[:-1]
+                content = "\n".join(lines).strip()
+                # Update the response object
+                response_obj.content = content
 
             # Validate that the content is valid JSON
             try:
@@ -450,6 +480,9 @@ class ClaudeAdapter(BaseLLMAdapter):
                 for tool in tools
             ]
 
+            # Track tool calls across stream
+            tool_calls_map = {}  # {index: {name, arguments}}
+
             async with self.client.messages.stream(
                 model=model,
                 max_tokens=params.max_tokens or 1024,
@@ -459,30 +492,73 @@ class ClaudeAdapter(BaseLLMAdapter):
             ) as stream:
                 async for event in stream:
                     if event.type == "content_block_delta":
-                        if event.delta.type == "text_delta":
+                        delta_type = event.delta.type
+
+                        # Handle different delta types
+                        if delta_type == "text_delta":
+                            # Standard text output
                             yield StreamingChunk(
                                 type="text",
                                 content=event.delta.text,
                                 delta=True,
                             )
-                        elif event.delta.type == "tool_use_delta":
+                        elif delta_type == "thinking_delta":
+                            # MiniMax thinking block (interleaved thinking)
                             yield StreamingChunk(
-                                type="tool_call",
-                                content={
-                                    "name": event.delta.name,
-                                    "arguments": event.delta.input,
-                                },
+                                type="text",
+                                content=event.delta.thinking,
                                 delta=True,
                             )
+                        elif delta_type == "input_json_delta":
+                            # Tool arguments being streamed
+                            index = event.index
+                            if index not in tool_calls_map:
+                                tool_calls_map[index] = {"arguments": ""}
+                            tool_calls_map[index]["arguments"] += (
+                                event.delta.partial_json
+                            )
 
-                    elif event.type == "message_stop":
+                    elif event.type == "content_block_start":
+                        # Tool use started
+                        if hasattr(event.content_block, "name"):
+                            index = event.index
+                            tool_calls_map[index] = {
+                                "name": event.content_block.name,
+                                "id": event.content_block.id,
+                                "arguments": "",
+                            }
+
+                    elif event.type == "content_block_stop":
+                        # Tool use completed - emit the full tool call
+                        index = event.index
+                        if index in tool_calls_map:
+                            tool_info = tool_calls_map[index]
+                            if "name" in tool_info:
+                                # Parse accumulated JSON arguments
+                                try:
+                                    args = json.loads(tool_info["arguments"])
+                                except json.JSONDecodeError:
+                                    args = {}
+
+                                yield StreamingChunk(
+                                    type="tool_call",
+                                    content={
+                                        "name": tool_info["name"],
+                                        "arguments": args,
+                                        "id": tool_info.get("id"),
+                                    },
+                                    delta=False,
+                                )
+
+                    elif event.type == "message_delta":
+                        # Message metadata (usage stats come here)
                         if hasattr(event, "usage"):
                             yield StreamingChunk(
                                 type="text",
                                 content={
                                     "usage": {
-                                        "input_tokens": event.usage.input_tokens,
-                                        "output_tokens": event.usage.output_tokens,
+                                        "input_tokens": (event.usage.input_tokens),
+                                        "output_tokens": (event.usage.output_tokens),
                                     }
                                 },
                                 delta=False,
