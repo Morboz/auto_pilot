@@ -278,11 +278,14 @@ class ClaudeAdapter(BaseLLMAdapter):
 
             # Claude uses JSON schema format in the prompt
             # We'll ask the model to output JSON matching the schema
-            system_prompt = request.get("system", "")
+            system_prompt = request.get("system") or ""
             schema_str = json.dumps(params.json_schema, indent=2)
             system_prompt += (
-                "\n\nPlease respond with valid JSON only that matches "
-                f"the following schema:\n{schema_str}"
+                "\n\nYou must analyze the input and output ONLY valid JSON format that "
+                f"strictly matches the following schema:\n{schema_str}\n\n"
+                "Important: Your response must be valid JSON only, with no additional "
+                "text, explanations, or markdown formatting. Do not wrap the JSON in "
+                "code blocks or add any commentary."
             )
 
             response = await self.client.messages.create(
