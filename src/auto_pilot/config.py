@@ -11,8 +11,15 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
 
+    # Optional LLM provider settings
+    anthropic_api_key: str = ""
+    anthropic_base_url: str = ""
+    openai_api_key: str = ""
+    openai_base_url: str = ""
+
     class Config:
         env_file = ".env"
+        model_extra = "ignore"  # Allow extra fields from .env
 
 
 # 创建全局设置实例

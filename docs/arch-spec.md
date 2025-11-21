@@ -42,12 +42,12 @@
 └───────────────▲────────────────┘                       └───────────────────────────┘
                 │
                 │
-┌───────────────┴────────────────┐        
-│     Workspace Storage Service  │        
-│  - Per-Agent Sandbox Filesystem│        
-│  - Versioning / Snapshots      │        
-│  - Artifact Storage            │        
-└────────────────────────────────┘        
+┌───────────────┴────────────────┐
+│     Workspace Storage Service  │
+│  - Per-Agent Sandbox Filesystem│
+│  - Versioning / Snapshots      │
+│  - Artifact Storage            │
+└────────────────────────────────┘
 
 ┌───────────────────────────────┐
 │     Audit & Event Log Store   │
@@ -157,7 +157,7 @@ Start Task →       │ 1. Initialize Agent Context  │
                                   │ yes
                                   ▼
                              go to 2
-                                  │ 
+                                  │
                            (loop continues)
                                   │
                                   ▼
