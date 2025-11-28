@@ -7,11 +7,14 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
 
+from ...logger import get_logger
 from ..errors import (
     AuthenticationError,
     InvalidRequestError,
     map_provider_error,
 )
+
+
 from ..types import (
     GenerationParams,
     GenerationResponse,
@@ -30,6 +33,8 @@ from ..types import (
 )
 from .base import BaseLLMAdapter
 
+
+logger = get_logger(__name__)
 
 class ClaudeAdapter(BaseLLMAdapter):
     """Adapter for Anthropic Claude API and compatible providers.
@@ -190,7 +195,7 @@ class ClaudeAdapter(BaseLLMAdapter):
                     )
             except (TypeError, AttributeError) as e:
                 # Handle cases where block attributes might be None
-                print(f"[WARN] Error processing block {block.type}: {e}")
+                logger.warning("Error processing block %s: %s", block.type, e)
                 continue
 
         # If no text content but has thinking, use thinking as content

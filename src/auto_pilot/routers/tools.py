@@ -1,6 +1,17 @@
+import json
 from typing import Any, Dict, List
+from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..database import get_session
+from ..logger import get_logger
+from ..models import ToolExecutionLog
+from ..schemas.tools import ToolExecuteRequest, ToolExecuteResponse
+
+logger = get_logger(__name__)
+
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 
@@ -70,6 +81,88 @@ async def get_tool(tool_name: str):
         "parameters": tool_def.parameters,
         "metadata": tool_def.metadata,
     }
+
+
+@router.post("/{tool_name}/execute", response_model=ToolExecuteResponse)
+async def execute_tool(
+    tool_name: str,
+    request: ToolExecuteRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    执行一个工具（用于调试和手动测试）
+
+    Args:
+        tool_name: 工具名称
+        request: 包含工具参数和超时配置
+        session: 数据库会话
+
+    Returns:
+        工具执行结果
+    """
+    from ..main import _tool_system
+
+    if not _tool_system or not _tool_system.get("registry"):
+        raise HTTPException(status_code=503, detail="Tool system not initialized")
+
+    if not _tool_system or not _tool_system.get("executor"):
+        raise HTTPException(status_code=503, detail="Tool executor not initialized")
+
+    registry = _tool_system["registry"]
+    executor = _tool_system["executor"]
+
+    # Get tool definition
+    tool_def = registry.get_tool(tool_name)
+    if not tool_def:
+        raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
+
+    try:
+        # Execute tool
+        result = await executor.execute(
+            tool_name=tool_name,
+            arguments=request.arguments,
+            timeout=request.timeout,
+        )
+
+        # Save execution to database
+        try:
+            # Create a dummy task_id since this is a direct tool execution
+            task_id = uuid4()
+
+            log = ToolExecutionLog(
+                task_id=task_id,
+                tool_name=tool_name,
+                input_params=json.dumps(request.arguments),
+                output=json.dumps(result.result)
+                if result.success and result.result
+                else None,
+                error_message=result.error if not result.success else None,
+                duration_ms=result.execution_time_ms,
+                sandbox_enabled=True,
+                resource_usage=json.dumps(result.resource_usage)
+                if result.resource_usage
+                else None,
+            )
+
+            session.add(log)
+            await session.commit()
+            logger.info("✅ Tool execution log saved to DB with id: %s", log.id)
+        except Exception as db_error:
+            # Don't fail the request if DB logging fails
+            logger.error(
+                "❌ Failed to save tool execution log: %s", db_error, exc_info=True
+            )
+
+        return ToolExecuteResponse(
+            tool_name=tool_name,
+            success=result.success,
+            result=result.result,
+            error=result.error,
+            execution_time_ms=result.execution_time_ms,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to execute tool: {str(e)}")
 
 
 @router.delete("/{tool_name}")

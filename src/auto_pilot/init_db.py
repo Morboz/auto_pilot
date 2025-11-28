@@ -3,7 +3,10 @@
 import asyncio
 
 from .database import AsyncSessionLocal, engine
+from .logger import get_logger
 from .models import Agent, AgentTool, Task, TaskLog, Tool, ToolExecutionLog
+
+logger = get_logger(__name__)
 
 
 async def init_database(drop_first: bool = False) -> None:
@@ -15,26 +18,26 @@ async def init_database(drop_first: bool = False) -> None:
     """
     from .database import create_db_and_tables
 
-    print("🚀 正在初始化数据库...")
+    logger.info("🚀 正在初始化数据库...")
 
     async with engine.begin() as conn:
         if drop_first:
-            print("⚠️  删除现有表...")
+            logger.info("⚠️  删除现有表...")
             await conn.run_sync(ToolExecutionLog.__table__.drop)
             await conn.run_sync(TaskLog.__table__.drop)
             await conn.run_sync(Task.__table__.drop)
             await conn.run_sync(AgentTool.__table__.drop)
             await conn.run_sync(Tool.__table__.drop)
             await conn.run_sync(Agent.__table__.drop)
-            print("✅ 现有表已删除")
+            logger.info("✅ 现有表已删除")
 
-    print("📦 创建新表...")
+    logger.info("📦 创建新表...")
     await create_db_and_tables()
-    print("✅ 所有表创建成功")
+    logger.info("✅ 所有表创建成功")
 
     # 创建一些示例数据
     await create_sample_data()
-    print("✨ 数据库初始化完成！")
+    logger.info("✨ 数据库初始化完成！")
 
 
 async def create_sample_data() -> None:
@@ -77,8 +80,8 @@ async def create_sample_data() -> None:
         session.add(agent_tool2)
         await session.commit()
 
-        print(f"   📄 创建示例 Agent: {sample_agent.name}")
-        print(f"   🛠️  创建示例 Tool: {http_tool.name}, {sql_tool.name}")
+        logger.info("   📄 创建示例 Agent: %s", sample_agent.name)
+        logger.info("   🛠️  创建示例 Tool: %s, %s", http_tool.name, sql_tool.name)
 
 
 if __name__ == "__main__":

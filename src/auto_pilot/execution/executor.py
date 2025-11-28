@@ -5,8 +5,8 @@ that drives autonomous agent behavior, similar to Claude Code.
 """
 
 import asyncio
+import json
 import random
-import time
 from typing import Any, Dict, List, Optional
 
 from auto_pilot.llm import BaseLLMAdapter, Message, ToolDefinition
@@ -15,7 +15,9 @@ from auto_pilot.llm.errors import (
     ConfigurationError,
     RateLimitError,
 )
+from auto_pilot.models import ToolExecutionLog
 
+from ..logger import get_logger
 from .callbacks import BaseExecutionCallback, CallbackManager
 from .state_manager import StateManager
 from .tool_executor import ToolExecutor
@@ -29,6 +31,8 @@ from .types import (
     TaskOutput,
     ToolCallRecord,
 )
+
+logger = get_logger(__name__)
 
 
 class AgentExecutor:
@@ -83,6 +87,7 @@ class AgentExecutor:
         task_input: TaskInput,
         tools: Optional[List[ToolDefinition]] = None,
         config: Optional[ExecutionConfig] = None,
+        session: Optional[Any] = None,
     ) -> TaskOutput:
         """Execute a task from start to finish.
 
@@ -90,6 +95,7 @@ class AgentExecutor:
             task_input: Input for the task
             tools: Available tools for the task
             config: Execution configuration
+            session: Optional database session for saving execution logs
 
         Returns:
             TaskOutput with results
@@ -118,7 +124,7 @@ class AgentExecutor:
 
         try:
             # Execute the main loop
-            await self._execute_loop(task_input.task_id, tools or [], config)
+            await self._execute_loop(task_input.task_id, tools or [], config, session)
 
             # Task completed successfully
             await self.state_manager.update_execution_status(
@@ -181,6 +187,7 @@ class AgentExecutor:
         task_id: str,
         tools: List[ToolDefinition],
         config: ExecutionConfig,
+        session: Optional[Any] = None,
     ) -> None:
         """Execute the main Plan → Act → Observe → Re-plan loop.
 
@@ -188,6 +195,7 @@ class AgentExecutor:
             task_id: The task ID
             tools: Available tools
             config: Execution configuration
+            session: Optional database session for saving execution logs
         """
         state = await self.state_manager.load_state(task_id)
         if not state:
@@ -229,6 +237,7 @@ class AgentExecutor:
                         step.tool_calls,
                         tools,
                         config,
+                        session,
                     )
 
                     # Add tool results to state messages for next LLM call
@@ -412,6 +421,7 @@ To indicate completion, simply state that the task is complete in your response.
         tool_calls: List[Dict[str, Any]],
         tools: List[ToolDefinition],
         config: ExecutionConfig,
+        session: Optional[Any] = None,
     ) -> None:
         """Execute tool calls and record results.
 
@@ -420,6 +430,7 @@ To indicate completion, simply state that the task is complete in your response.
             tool_calls: List of tool calls to execute
             tools: Available tools
             config: Execution configuration
+            session: Optional database session for saving execution logs
         """
         for tool_call_data in tool_calls:
             if not self._is_running(task_id):
@@ -441,24 +452,24 @@ To indicate completion, simply state that the task is complete in your response.
                 if not tool_def:
                     raise ValueError(f"Tool {tool_name} not found")
 
-                # Execute tool (placeholder - actual implementation would call the tool)
-                start_time = time.time()
+                # Execute tool
                 result = await self._invoke_tool(tool_def, arguments)
-                duration = (time.time() - start_time) * 1000
+                duration = result.duration_ms if result.duration_ms else 0
 
                 await self.callback_manager.emit_tool_result(
                     task_id,
                     tool_name,
-                    result,
+                    result.result if result.success else None,
                 )
 
                 # Record tool call
                 record = ToolCallRecord(
                     tool_name=tool_name,
                     arguments=arguments,
-                    result=result,
-                    success=True,
+                    result=result.result if result.success else None,
+                    success=result.success,
                     duration_ms=duration,
+                    error=result.error if not result.success else None,
                 )
 
                 await self.state_manager.record_tool_call(task_id, record)
@@ -466,6 +477,12 @@ To indicate completion, simply state that the task is complete in your response.
                     task_id,
                     record,
                 )
+
+                # Save to database if session is provided
+                if session:
+                    await self._save_tool_execution_to_db(
+                        session, task_id, tool_def, result
+                    )
 
             except Exception as e:
                 await self.callback_manager.emit_error(task_id, e)
@@ -668,6 +685,50 @@ To indicate completion, simply state that the task is complete in your response.
             True if task is running
         """
         return self._running_tasks.get(task_id, False)
+
+    async def _save_tool_execution_to_db(
+        self,
+        session: Any,
+        task_id: str,
+        tool: ToolDefinition,
+        execution_result: ToolCallRecord,
+    ) -> None:
+        """Save tool execution result to database.
+
+        Args:
+            session: Database session
+            task_id: The task ID
+            tool: Tool definition
+            execution_result: Tool execution result
+        """
+        from uuid import UUID
+
+        try:
+            # Convert task_id to UUID if it's a string
+            task_uuid = UUID(task_id) if isinstance(task_id, str) else task_id
+
+            # Create tool execution log
+            log = ToolExecutionLog(
+                task_id=task_uuid,
+                tool_name=tool.name,
+                input_params=json.dumps(execution_result.arguments),
+                output=json.dumps(execution_result.result)
+                if execution_result.success and execution_result.result
+                else None,
+                error_message=execution_result.error
+                if not execution_result.success
+                else None,
+                duration_ms=execution_result.duration_ms,
+                sandbox_enabled=True,  # TODO: Make this configurable
+                resource_usage=None,  # TODO: Capture resource usage from sandbox
+            )
+
+            session.add(log)
+            await session.commit()
+
+        except Exception as e:
+            # Log error but don't fail the task
+            logger.error("Failed to save tool execution log: %s", e)
 
     async def stop(self, task_id: str) -> None:
         """Stop a running task.

@@ -128,7 +128,12 @@ class ToolExecutor:
                 execution_context=execution_context,
                 timeout=timeout,
                 retry_config=retry_config,
+                start_time=start_time,
             )
+
+            # Ensure execution_time_ms is set
+            if result.execution_time_ms == 0:
+                result.execution_time_ms = (time.time() - start_time) * 1000
 
             # Update metrics
             if self.metrics:
@@ -161,6 +166,7 @@ class ToolExecutor:
         execution_context: Dict[str, Any],
         timeout: float,
         retry_config: Optional[Dict[str, Any]],
+        start_time: float,
     ) -> ExecutionResult:
         """Execute tool with retry logic.
 
@@ -170,6 +176,7 @@ class ToolExecutor:
             execution_context: Execution context
             timeout: Execution timeout
             retry_config: Retry configuration
+            start_time: Start time for execution time tracking
 
         Returns:
             Execution result
@@ -184,6 +191,7 @@ class ToolExecutor:
                     arguments=arguments,
                     execution_context=execution_context,
                     timeout=timeout,
+                    start_time=start_time,
                 )
 
                 if result.success:
@@ -252,6 +260,7 @@ class ToolExecutor:
         arguments: Dict[str, Any],
         execution_context: Dict[str, Any],
         timeout: float,
+        start_time: float,
     ) -> ExecutionResult:
         """Execute a tool once (single attempt).
 
@@ -260,11 +269,11 @@ class ToolExecutor:
             arguments: Tool arguments
             execution_context: Execution context
             timeout: Execution timeout
+            start_time: Start time for execution time tracking
 
         Returns:
             Execution result
         """
-        start_time = time.time()
         tool_name = tool_definition.name
 
         try:
@@ -275,6 +284,7 @@ class ToolExecutor:
                     arguments=arguments,
                     execution_context=execution_context,
                     timeout=timeout,
+                    start_time=start_time,
                 )
             else:
                 result = await self._execute_directly(
@@ -282,10 +292,8 @@ class ToolExecutor:
                     arguments=arguments,
                     execution_context=execution_context,
                     timeout=timeout,
+                    start_time=start_time,
                 )
-
-            execution_time_ms = (time.time() - start_time) * 1000
-            result.execution_time_ms = execution_time_ms
 
             return result
 
@@ -312,6 +320,7 @@ class ToolExecutor:
         arguments: Dict[str, Any],
         execution_context: Dict[str, Any],
         timeout: float,
+        start_time: float,
     ) -> ExecutionResult:
         """Execute tool in sandbox environment.
 
@@ -320,6 +329,7 @@ class ToolExecutor:
             arguments: Tool arguments
             execution_context: Execution context
             timeout: Execution timeout
+            start_time: Start time for execution time tracking
 
         Returns:
             Execution result
@@ -327,9 +337,11 @@ class ToolExecutor:
         # Get tool implementation
         implementation = self._tool_implementations.get(tool_definition.name)
         if not implementation:
+            execution_time_ms = (time.time() - start_time) * 1000
             return ExecutionResult.error_result(
                 error=f"No implementation found for tool '{tool_definition.name}'",
                 error_type="implementation_not_found",
+                execution_time_ms=execution_time_ms,
             )
 
         # Execute in sandbox
@@ -341,16 +353,20 @@ class ToolExecutor:
             timeout=timeout,
         )
 
+        execution_time_ms = (time.time() - start_time) * 1000
+
         if sandbox_result.success:
             return ExecutionResult.success_result(
                 result=sandbox_result.result,
                 resource_usage=sandbox_result.resource_usage.model_dump(),
+                execution_time_ms=execution_time_ms,
             )
         else:
             return ExecutionResult.error_result(
                 error=sandbox_result.error_message,
                 error_type="sandbox_error",
                 resource_usage=sandbox_result.resource_usage.model_dump(),
+                execution_time_ms=execution_time_ms,
             )
 
     async def _execute_directly(
@@ -359,6 +375,7 @@ class ToolExecutor:
         arguments: Dict[str, Any],
         execution_context: Dict[str, Any],
         timeout: float,
+        start_time: float,
     ) -> ExecutionResult:
         """Execute tool directly without sandbox (for trusted tools).
 
@@ -367,6 +384,7 @@ class ToolExecutor:
             arguments: Tool arguments
             execution_context: Execution context
             timeout: Execution timeout
+            start_time: Start time for execution time tracking
 
         Returns:
             Execution result
@@ -375,9 +393,11 @@ class ToolExecutor:
         implementation = self._tool_implementations.get(tool_name)
 
         if not implementation:
+            execution_time_ms = (time.time() - start_time) * 1000
             return ExecutionResult.error_result(
                 error=f"No implementation found for tool '{tool_name}'",
                 error_type="implementation_not_found",
+                execution_time_ms=execution_time_ms,
             )
 
         try:
@@ -387,15 +407,21 @@ class ToolExecutor:
                 timeout=timeout,
             )
 
-            return ExecutionResult.success_result(result=result)
+            execution_time_ms = (time.time() - start_time) * 1000
+            return ExecutionResult.success_result(
+                result=result,
+                execution_time_ms=execution_time_ms,
+            )
 
         except asyncio.TimeoutError:
             raise
 
         except Exception as e:
+            execution_time_ms = (time.time() - start_time) * 1000
             return ExecutionResult.error_result(
                 error=str(e),
                 error_type="execution_error",
+                execution_time_ms=execution_time_ms,
             )
 
     def format_result_for_llm(self, result: ExecutionResult) -> str:

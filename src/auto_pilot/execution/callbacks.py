@@ -7,7 +7,10 @@ events from the execution loop, enabling features like WebSocket streaming.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+from ..logger import get_logger
 from .types import EventType, ExecutionEvent, ToolCallRecord
+
+logger = get_logger(__name__)
 
 
 class BaseExecutionCallback(ABC):
@@ -151,7 +154,7 @@ class CallbackManager:
                 await callback.on_event(event)
             except Exception as e:
                 # Log error but don't let it crash the execution loop
-                print(f"Error in callback {callback}: {e}")
+                logger.error("Error in callback %s: %s", callback, e)
 
     async def emit_step_started(self, task_id: str, step: int) -> None:
         for callback in self._callbacks:

@@ -60,7 +60,10 @@ class ToolExecutor:
         Returns:
             ToolCallRecord with execution result
         """
+        import time
+
         timeout = timeout or self.default_timeout
+        start_time = time.time()
 
         try:
             # Validate arguments against schema
@@ -79,28 +82,35 @@ class ToolExecutor:
                     timeout=timeout,
                 )
 
+            duration_ms = (time.time() - start_time) * 1000
+
             return ToolCallRecord(
                 tool_name=tool.name,
                 arguments=arguments,
                 result=result,
                 success=True,
+                duration_ms=duration_ms,
             )
 
         except asyncio.TimeoutError:
+            duration_ms = (time.time() - start_time) * 1000
             error_msg = f"Tool execution timed out after {timeout}s"
             return ToolCallRecord(
                 tool_name=tool.name,
                 arguments=arguments,
                 success=False,
                 error=error_msg,
+                duration_ms=duration_ms,
             )
 
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
             return ToolCallRecord(
                 tool_name=tool.name,
                 arguments=arguments,
                 success=False,
                 error=str(e),
+                duration_ms=duration_ms,
             )
 
     def _validate_arguments(

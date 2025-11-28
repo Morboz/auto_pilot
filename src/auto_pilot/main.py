@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from .config import settings
 from .database import close_db_connection, create_db_and_tables
 from .llm import BaseLLMAdapter
+from .logger import get_logger, setup_logging
 from .routers import agents, execution, tasks, tools
 from .tools import create_tool_system
 from .tools.builtin import BuiltinToolLoader
@@ -16,6 +17,8 @@ _llm_adapter: Optional[BaseLLMAdapter] = None
 # Global tool system instance
 _tool_system = None
 _tool_executor = None
+
+logger = get_logger(__name__)
 
 
 def init_llm_adapter(adapter: BaseLLMAdapter):
@@ -46,43 +49,36 @@ async def lifespan(app: FastAPI):
     """
     global _tool_system, _tool_executor
 
+    # 初始化日志
+    setup_logging()
+
     # 启动时执行
-    print("🚀 正在启动 AutoPilot API...")
-    print(f"📊 连接数据库: {settings.database_url}")
+    logger.info("🚀 正在启动 AutoPilot API...")
+    logger.info(f"📊 连接数据库: {settings.database_url}")
     await create_db_and_tables()
-    print("✅ 数据库就绪")
+    logger.info("✅ 数据库就绪")
 
     # Initialize tool system
-    print("\n🔧 正在初始化工具系统...")
+    logger.info("🔧 正在初始化工具系统...")
     _tool_system = create_tool_system()
     _tool_executor = _tool_system["executor"]
-    print("✅ 工具系统就绪")
+    logger.info("✅ 工具系统就绪")
 
-    # Load built-in tools
-    print("📦 正在加载内置工具...")
+    # Load builtin tools
+    logger.info("📦 加载内置工具...")
     loader = BuiltinToolLoader(
         registry=_tool_system["registry"],
         executor=_tool_executor,
     )
-    tool_count = loader.load_builtin_tools()
-    print(f"✅ 已加载 {tool_count} 个内置工具")
-    loaded_tools = loader.get_loaded_tools()
-    for tool_name in loaded_tools:
-        print(f"   - {tool_name}")
-
-    # Check if LLM adapter is initialized
-    if _llm_adapter is None:
-        print(
-            "\n⚠️  LLM adapter not initialized. "
-            "Call init_llm_adapter() to enable execution features."
-        )
+    loader.load_builtin_tools()
+    logger.info(f"✅ 已加载 {len(_tool_system['registry'].list_tools())} 个工具")
 
     yield
 
     # 关闭时执行
-    print("\n🔌 正在关闭数据库连接...")
+    logger.info("🛑 正在关闭 AutoPilot API...")
     await close_db_connection()
-    print("✅ 应用已关闭")
+    logger.info("👋 再见!")
 
 
 # 创建 FastAPI 应用实例

@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
 
+    # Logging settings
+    log_level: str = "INFO"
+    log_json_format: bool = False
+
     # Optional LLM provider settings
     anthropic_api_key: str = ""
     anthropic_base_url: str = ""

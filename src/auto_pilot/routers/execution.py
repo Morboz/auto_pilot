@@ -408,7 +408,9 @@ async def _execute_task_wrapper(
 ):
     """Wrapper for executing task with proper cleanup."""
     try:
-        output = await executor.run(task_input, tools=tools, config=config)
+        output = await executor.run(
+            task_input, tools=tools, config=config, session=session
+        )
 
         # Update database record with final result
         from sqlalchemy import text
