@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class Task(SQLModel, table=True):
+    __tablename__ = "task"
     """任务表 - 存储每次用户触发的任务执行"""
 
     id: Optional[UUID] = Field(

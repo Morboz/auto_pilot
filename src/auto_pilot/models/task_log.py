@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class TaskLog(SQLModel, table=True):
+    __tablename__ = "task_log"
     """任务日志表 - 存储 ReAct 风格的 thought/action/observation 步骤"""
 
     id: Optional[UUID] = Field(

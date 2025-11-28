@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class Tool(SQLModel, table=True):
+    __tablename__ = "tool"
     """工具注册表 - 存储可用的 Tool 定义"""
 
     id: Optional[UUID] = Field(
@@ -26,8 +27,21 @@ class Tool(SQLModel, table=True):
     description: str = Field(description="工具详细说明")
     schema: Optional[str] = Field(default=None, description="工具参数 JSON Schema")
     created_at: datetime = Field(
-        default_factory=datetime.utcnow, description="创建时间"
+        default_factory=datetime.utcnow,
+        description="创建时间",
+        sa_column_kwargs={"nullable": False},
     )
     updated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="更新时间"
+        default_factory=datetime.utcnow,
+        description="更新时间",
+        sa_column_kwargs={"nullable": False, "onupdate": datetime.utcnow},
     )
+
+
+class ToolCreate(SQLModel):
+    """创建 Tool 的请求 schema（不包含时间戳）"""
+
+    name: str = Field(min_length=1, max_length=100, description="工具名称")
+    type: str = Field(max_length=50, description="工具类型")
+    description: str = Field(description="工具详细说明")
+    schema: Optional[str] = Field(default=None, description="工具参数 JSON Schema")

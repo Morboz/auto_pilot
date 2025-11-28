@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class Agent(SQLModel, table=True):
+    __tablename__ = "agent"
     """Agent 配置表 - 存储用户创建的自定义 Agent"""
 
     id: Optional[UUID] = Field(

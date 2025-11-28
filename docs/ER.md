@@ -9,6 +9,9 @@
 * **Task Logs（ReAct 风格 step logs）**
 * **Tool Execution Logs（单独跟踪每次工具调用）**
 
+### 重要更新
+**agent_tools 表新增 `permissions` 字段**：支持 per-agent-per-tool 的精细化权限配置，与 AutoPilot Tool System 架构完全对齐。
+
 下面给你 **ASCII 风格 ER 图 + 每个表的详细字段解释**。
 
 ---
@@ -108,20 +111,66 @@ tasks ──────────────────┼─────�
 
 ---
 
-# 🟩 **表 3：agent_tools（多对多关联）**
+# 🟩 **表 3：agent_tools（多对多关联 + 权限配置）**
 
 ### 用途
 
 一个 Agent 可以绑定多个 Tools。
 一个 Tool 也可以被多个 Agent 共享。
 
+**核心功能**：为每个 Agent 配置独立的 Tool 权限（JSON 格式），实现精细化权限控制。
+
 ### 字段定义
 
-| 字段       | 类型             | 说明        |
-| -------- | -------------- | --------- |
-| id       | PK, UUID       | 记录 ID     |
-| agent_id | FK → agents.id | 关联的 agent |
-| tool_id  | FK → tools.id  | 关联的 tool  |
+| 字段          | 类型             | 说明                              |
+| ----------- | -------------- | --------------------------------- |
+| id          | PK, UUID       | 记录 ID                           |
+| agent_id    | FK → agents.id | 关联的 agent                      |
+| tool_id     | FK → tools.id  | 关联的 tool                       |
+| permissions | JSON           | Tool 权限配置（可选，为 null 时使用默认权限） |
+| created_at  | datetime       | 创建时间                           |
+| updated_at  | datetime       | 更新时间                           |
+
+### permissions JSON 结构
+
+```json
+{
+  "filesystem": {
+    "allowed_paths": ["/tmp", "/workspace"],
+    "denied_paths": ["/etc", "/home", "/root"],
+    "operations": ["read", "write"],
+    "recursive_access": true
+  },
+  "network": {
+    "enabled": false,
+    "allowed_hosts": ["*.api.openai.com", "localhost"],
+    "allowed_ports": [80, 443],
+    "denied_hosts": ["*"],
+    "max_connections": 10
+  },
+  "resources": {
+    "max_cpu_percent": 50.0,
+    "max_memory_mb": 256,
+    "max_disk_space_mb": 512,
+    "max_execution_time_seconds": 10.0,
+    "max_processes": 5,
+    "max_file_size_mb": 100
+  },
+  "security": {
+    "enable_sandbox": true,
+    "enable_output_sanitization": true,
+    "enable_audit_logging": true,
+    "allowed_imports": ["os", "json"],
+    "blocked_imports": ["subprocess", "socket"]
+  },
+  "custom_permissions": {}
+}
+```
+
+**权限获取优先级**：
+1. agent_tools.permissions (JSON) - 最高优先级
+2. 代码中通过 `PermissionManager.set_tool_permissions()` 设置的权限
+3. `PermissionManager._default_permissions` - 默认权限
 
 > 也可用联合主键 `(agent_id, tool_id)`，但 UUID 更灵活。
 
@@ -216,7 +265,71 @@ tasks ──────────────────┼─────�
 
 ---
 
-# 🧠 ER 图设计的优点
+# 🔐 **表 7：agent_tools.permissions 的设计优点**
+
+### ✔ 支持 per-agent-per-tool 的精细化权限控制
+
+通过 `agent_tools.permissions` 字段，可以实现：
+
+**场景 1：不同 Agent 对同一工具有不同权限**
+```
+Agent: "debug-agent"
+Tool: "file_operations"
+Permissions: { filesystem: { allowed_paths: ["*"] } }
+# 调试 Agent 可以访问所有文件
+
+Agent: "public-agent"
+Tool: "file_operations"
+Permissions: { filesystem: { allowed_paths: ["/tmp", "/public"] } }
+# 公开 Agent 只能访问受限目录
+```
+
+**场景 2：权限动态配置，无需修改代码**
+- 通过 Web UI 修改 Agent 的工具权限
+- 实时生效，无需重启服务
+- 适合多租户场景
+
+### ✔ 权限配置的灵活性
+
+**三级权限回退机制**：
+1. **数据库配置**（最高优先级）- agent_tools.permissions
+2. **代码配置** - PermissionManager.set_tool_permissions()
+3. **默认配置** - PermissionManager._default_permissions
+
+**这样设计的好处**：
+- 既有数据库的动态性
+- 又保留了代码配置的版本控制能力
+- 适合不同场景：开发环境用代码，生产环境用数据库
+
+### ✔ 支持 Tool Permission 的版本化
+
+```sql
+-- 查看 Agent 的工具权限变更历史
+SELECT
+    agent_id,
+    tool_id,
+    permissions,
+    updated_at
+FROM agent_tools
+WHERE agent_id = 'agent_123' AND tool_id = 'tool_456'
+ORDER BY updated_at DESC;
+```
+
+### ✔ 与 AutoPilot Tool System 架构完全一致
+
+- `arch-spec.md` 中 Tool System 包含 4 个核心组件
+- `TOOL_SYSTEM.md` 详细描述了 Permission Manager
+- ER 图现在完整映射了架构设计
+
+### ✔ 数据库设计保持简洁
+
+- 使用 JSON 字段存储复杂的权限结构
+- 避免创建多个细粒度的权限表（如 filesystem_permissions, network_permissions）
+- 与 Pydantic 的 ToolPermissions 模型完美对应
+
+---
+
+# 🧠 ER 图设计的整体优点
 
 ### ✔ 自动化 Agent 的所有数据都可追踪
 
@@ -227,3 +340,5 @@ tasks ──────────────────┼─────�
 ### ✔ 可扩展到「多 Agent 互相调用」「Workflow DAG」
 
 ### ✔ UI 可实时展示任务执行每一步
+
+### ✔ 支持精细化权限控制（新增）

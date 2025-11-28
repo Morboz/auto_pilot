@@ -19,3 +19,4 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 - 本项目使用uv进行项目管理，执行脚本使用uv run，而不是直接运行python
 - 运行单元测试也是使用uv run pytest
 - 后端整体架构文档： @docs/arch-spec.md
+- 使用logger打印日志的时候, 不要使用fstring, 使用lazy的方式打印日志

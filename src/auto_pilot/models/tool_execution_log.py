@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class ToolExecutionLog(SQLModel, table=True):
+    __tablename__ = "tool_execution_log"
     """工具执行日志表 - 记录每次工具调用的详细信息（用于审计）"""
 
     id: Optional[UUID] = Field(
