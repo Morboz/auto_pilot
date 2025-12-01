@@ -21,9 +21,7 @@ class Tool(SQLModel, table=True):
         index=True,
         description="工具名称（如 HTTP GET、SQL Query等）",
     )
-    type: str = Field(
-        max_length=50, description="工具类型（如 http、sql、web3、js、custom）"
-    )
+    type: str = Field(max_length=50, description="工具类型（如 http、sql、web3、js、custom）")
     description: str = Field(description="工具详细说明")
     schema: Optional[str] = Field(default=None, description="工具参数 JSON Schema")
     created_at: datetime = Field(

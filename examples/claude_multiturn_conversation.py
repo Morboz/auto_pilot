@@ -40,9 +40,7 @@ async def main():
     print("第1轮对话")
     print("=" * 60)
 
-    user_message_1 = Message(
-        role="user", content="你好！我的名字是张三，我是一名软件工程师。"
-    )
+    user_message_1 = Message(role="user", content="你好！我的名字是张三，我是一名软件工程师。")
     print(f"👤 用户: {user_message_1.content}")
 
     conversation_history.append(user_message_1)
@@ -71,9 +69,7 @@ async def main():
         print("第2轮对话")
         print("=" * 60)
 
-        user_message_2 = Message(
-            role="user", content="我很喜欢编程，你知道我喜欢什么编程语言吗？"
-        )
+        user_message_2 = Message(role="user", content="我很喜欢编程，你知道我喜欢什么编程语言吗？")
         print(f"👤 用户: {user_message_2.content}")
 
         conversation_history.append(user_message_2)
@@ -138,13 +134,9 @@ async def main():
         print("\n" + "=" * 60)
         print("对话总结")
         print("=" * 60)
-        print(
-            f"✓ 总轮数: {len([msg for msg in conversation_history if msg.role == 'user'])}"
-        )
+        print(f"✓ 总轮数: {len([msg for msg in conversation_history if msg.role == 'user'])}")
         print(f"✓ 消息总数: {len(conversation_history)}")
-        print(
-            f"✓ 对话参与者: {', '.join(set(msg.role for msg in conversation_history))}"
-        )
+        print(f"✓ 对话参与者: {', '.join(set(msg.role for msg in conversation_history))}")
 
         # 可选：保存对话历史到文件
         save_conversation_to_file(conversation_history)

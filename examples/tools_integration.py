@@ -215,9 +215,7 @@ async def demonstrate_tool_system():
     audit_log = security.get_audit_log()
     print(f"  Total audit entries: {len(audit_log)}")
     for entry in audit_log:
-        print(
-            f"    - {entry['tool_name']}: {'Success' if entry['success'] else 'Failed'}"
-        )
+        print(f"    - {entry['tool_name']}: {'Success' if entry['success'] else 'Failed'}")
 
     # Step 8: Tool discovery and search
     print("\n🔎 Step 8: Tool discovery")
@@ -239,9 +237,7 @@ async def demonstrate_tool_system():
     print("  read_file permissions:")
     print(f"    Filesystem operations: {read_permissions.filesystem.operations}")
     print(f"    Network enabled: {read_permissions.network.enabled}")
-    print(
-        f"    Max execution time: {read_permissions.resources.max_execution_time_seconds}s"
-    )
+    print(f"    Max execution time: {read_permissions.resources.max_execution_time_seconds}s")
 
     # Step 10: Batch execution
     print("\n⚡ Step 10: Batch execution")
@@ -263,9 +259,7 @@ async def demonstrate_tool_system():
     batch_results = await executor.execute_batch(batch_executions)
     print(f"  Batch execution completed: {len(batch_results)} tools")
     for i, result in enumerate(batch_results):
-        print(
-            f"    [{i}] Success: {result.success}, Time: {result.execution_time_ms:.2f}ms"
-        )
+        print(f"    [{i}] Success: {result.success}, Time: {result.execution_time_ms:.2f}ms")
 
     # Cleanup
     print("\n🧹 Cleanup")
@@ -335,9 +329,7 @@ async def demonstrate_per_agent_permissions():
             description="Read file contents",
             schema={
                 "type": "object",
-                "properties": {
-                    "file_path": {"type": "string", "description": "Path to the file"}
-                },
+                "properties": {"file_path": {"type": "string", "description": "Path to the file"}},
                 "required": ["file_path"],
             },
         )
@@ -442,9 +434,7 @@ async def demonstrate_per_agent_permissions():
         with open("/tmp/test.txt", "w") as f:
             f.write("Test content for safe agent")
 
-        safe_perms = await permissions.get_tool_permissions_async(
-            "read_file", str(agent_safe.id)
-        )
+        safe_perms = await permissions.get_tool_permissions_async("read_file", str(agent_safe.id))
 
         if "/tmp" in str(safe_perms.filesystem.allowed_paths):
             print("    ✓ Access allowed to /tmp")
@@ -452,9 +442,7 @@ async def demonstrate_per_agent_permissions():
         # Step 7: Test debug-agent with full access
         print("\n🔓 Step 7: Testing debug-agent with full access")
 
-        debug_perms = await permissions.get_tool_permissions_async(
-            "read_file", str(agent_debug.id)
-        )
+        debug_perms = await permissions.get_tool_permissions_async("read_file", str(agent_debug.id))
 
         if "*" in str(debug_perms.filesystem.allowed_paths):
             print("    ✓ Debug agent can access all paths")
@@ -466,16 +454,12 @@ async def demonstrate_per_agent_permissions():
         import time
 
         start = time.time()
-        perms1 = await permissions.get_tool_permissions_async(
-            "read_file", str(agent_safe.id)
-        )
+        perms1 = await permissions.get_tool_permissions_async("read_file", str(agent_safe.id))
         first_call_time = time.time() - start
 
         # Second call (should hit cache)
         start = time.time()
-        perms2 = await permissions.get_tool_permissions_async(
-            "read_file", str(agent_safe.id)
-        )
+        perms2 = await permissions.get_tool_permissions_async("read_file", str(agent_safe.id))
         second_call_time = time.time() - start
 
         print(f"    First call (DB): {first_call_time*1000:.2f}ms")
@@ -489,9 +473,7 @@ async def demonstrate_per_agent_permissions():
         print("    ✓ Cache cleared for safe-agent")
 
         # Verify cache is cleared
-        cache_cleared = permissions._get_cached_permission(
-            str(agent_safe.id), "read_file"
-        )
+        cache_cleared = permissions._get_cached_permission(str(agent_safe.id), "read_file")
         print(f"    ✓ Cache miss confirmed: {cache_cleared is None}")
 
         # Step 10: Cleanup

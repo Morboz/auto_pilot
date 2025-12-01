@@ -5,9 +5,7 @@ from .config import settings
 
 # 定义日志格式
 # 包含时间、模块名、日志级别、消息
-LOG_FORMAT = (
-    "%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
-)
+LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 

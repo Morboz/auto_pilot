@@ -101,25 +101,18 @@ class BuiltinToolLoader:
         """
         # Get tool definition
         if not hasattr(tool_class, "get_definition"):
-            raise ValueError(
-                f"Tool class {tool_class.__name__} missing get_definition()"
-            )
+            raise ValueError(f"Tool class {tool_class.__name__} missing get_definition()")
 
         definition = tool_class.get_definition()
         if not isinstance(definition, ToolDefinition):
-            raise ValueError(
-                f"get_definition() must return ToolDefinition, got {type(definition)}"
-            )
+            raise ValueError(f"get_definition() must return ToolDefinition, got {type(definition)}")
 
         # Get tool implementation
         if not hasattr(tool_class, "execute"):
             raise ValueError(f"Tool class {tool_class.__name__} missing execute()")
 
         execute_method = tool_class.execute
-        if not (
-            inspect.iscoroutinefunction(execute_method)
-            or inspect.ismethod(execute_method)
-        ):
+        if not (inspect.iscoroutinefunction(execute_method) or inspect.ismethod(execute_method)):
             raise ValueError("execute() must be an async method or static method")
 
         # Register with registry

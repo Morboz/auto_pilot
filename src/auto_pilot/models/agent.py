@@ -22,9 +22,5 @@ class Agent(SQLModel, table=True):
         description="使用的模型名称（如 gpt-4、claude-3等）",
     )
     system_prompt: str = Field(description="Agent 的人格与指令")
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow, description="创建时间"
-    )
-    updated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="更新时间"
-    )
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
+    updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新时间")

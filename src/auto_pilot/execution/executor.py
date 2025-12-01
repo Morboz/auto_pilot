@@ -117,9 +117,7 @@ class AgentExecutor:
         await self.state_manager.update_execution_status(
             task_input.task_id, ExecutionStatus.RUNNING
         )
-        await self.callback_manager.emit_status_changed(
-            task_input.task_id, ExecutionStatus.RUNNING
-        )
+        await self.callback_manager.emit_status_changed(task_input.task_id, ExecutionStatus.RUNNING)
 
         self._running_tasks[task_input.task_id] = True
 
@@ -166,9 +164,7 @@ class AgentExecutor:
                 task_input.task_id, ExecutionStatus.FAILED
             )
             await self.state_manager.set_error(task_input.task_id, str(e))
-            await self.callback_manager.emit_error(
-                task_input.task_id, e, context.current_step
-            )
+            await self.callback_manager.emit_error(task_input.task_id, e, context.current_step)
             await self.callback_manager.emit_status_changed(
                 task_input.task_id, ExecutionStatus.FAILED
             )
@@ -218,13 +214,9 @@ class AgentExecutor:
                 )
 
                 await self.state_manager.append_step(task_id, step)
-                await self.state_manager.update_current_step(
-                    task_id, state.current_step + 1
-                )
+                await self.state_manager.update_current_step(task_id, state.current_step + 1)
 
-                await self.callback_manager.emit_step_started(
-                    task_id, state.current_step + 1
-                )
+                await self.callback_manager.emit_step_started(task_id, state.current_step + 1)
 
                 # Check if this is the final step
                 if is_final:
@@ -244,9 +236,7 @@ class AgentExecutor:
                     # Add tool results to state messages for next LLM call
                     await self._add_tool_results_to_messages(task_id)
 
-                await self.callback_manager.emit_step_completed(
-                    task_id, state.current_step + 1
-                )
+                await self.callback_manager.emit_step_completed(task_id, state.current_step + 1)
 
                 # Delay between steps if configured
                 if config.step_delay > 0:
@@ -481,9 +471,7 @@ To indicate completion, simply state that the task is complete in your response.
 
                 # Save to database if session is provided
                 if session:
-                    await self._save_tool_execution_to_db(
-                        session, task_id, tool_def, result
-                    )
+                    await self._save_tool_execution_to_db(session, task_id, tool_def, result)
 
             except Exception as e:
                 await self.callback_manager.emit_error(task_id, e)
@@ -578,9 +566,7 @@ To indicate completion, simply state that the task is complete in your response.
             task_id: The task ID
             state: Current state
         """
-        await self.state_manager.set_error(
-            task_id, f"Maximum steps ({state.max_steps}) exceeded"
-        )
+        await self.state_manager.set_error(task_id, f"Maximum steps ({state.max_steps}) exceeded")
 
     async def _handle_error_with_retry(
         self,
@@ -715,9 +701,7 @@ To indicate completion, simply state that the task is complete in your response.
                 output=json.dumps(execution_result.result)
                 if execution_result.success and execution_result.result
                 else None,
-                error_message=execution_result.error
-                if not execution_result.success
-                else None,
+                error_message=execution_result.error if not execution_result.success else None,
                 duration_ms=execution_result.duration_ms,
                 sandbox_enabled=True,  # TODO: Make this configurable
                 resource_usage=None,  # TODO: Capture resource usage from sandbox
@@ -739,12 +723,8 @@ To indicate completion, simply state that the task is complete in your response.
         if task_id in self._running_tasks:
             self._running_tasks[task_id] = False
 
-        await self.state_manager.update_execution_status(
-            task_id, ExecutionStatus.STOPPED
-        )
-        await self.callback_manager.emit_status_changed(
-            task_id, ExecutionStatus.STOPPED
-        )
+        await self.state_manager.update_execution_status(task_id, ExecutionStatus.STOPPED)
+        await self.callback_manager.emit_status_changed(task_id, ExecutionStatus.STOPPED)
 
     async def pause(self, task_id: str) -> None:
         """Pause a running task.
@@ -755,9 +735,7 @@ To indicate completion, simply state that the task is complete in your response.
         if task_id in self._running_tasks:
             self._running_tasks[task_id] = False
 
-        await self.state_manager.update_execution_status(
-            task_id, ExecutionStatus.PAUSED
-        )
+        await self.state_manager.update_execution_status(task_id, ExecutionStatus.PAUSED)
         await self.callback_manager.emit_status_changed(task_id, ExecutionStatus.PAUSED)
 
     async def resume(self, task_id: str) -> None:
@@ -768,9 +746,5 @@ To indicate completion, simply state that the task is complete in your response.
         """
         self._running_tasks[task_id] = True
 
-        await self.state_manager.update_execution_status(
-            task_id, ExecutionStatus.RUNNING
-        )
-        await self.callback_manager.emit_status_changed(
-            task_id, ExecutionStatus.RUNNING
-        )
+        await self.state_manager.update_execution_status(task_id, ExecutionStatus.RUNNING)
+        await self.callback_manager.emit_status_changed(task_id, ExecutionStatus.RUNNING)

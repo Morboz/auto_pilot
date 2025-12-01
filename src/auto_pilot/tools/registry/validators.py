@@ -31,9 +31,7 @@ class SchemaValidator:
         except Exception as e:
             raise ValidationError(f"Invalid JSON Schema: {str(e)}")
 
-    def validate_parameters(
-        self, schema: Dict[str, Any], parameters: Dict[str, Any]
-    ) -> bool:
+    def validate_parameters(self, schema: Dict[str, Any], parameters: Dict[str, Any]) -> bool:
         """Validate parameters against a tool schema.
 
         Args:
@@ -95,9 +93,7 @@ class SchemaValidator:
             errors.append(str(e))
         return errors
 
-    def get_parameter_errors(
-        self, schema: Dict[str, Any], parameters: Dict[str, Any]
-    ) -> list:
+    def get_parameter_errors(self, schema: Dict[str, Any], parameters: Dict[str, Any]) -> list:
         """Get detailed parameter validation errors.
 
         Args:

@@ -27,9 +27,7 @@ async def main():
     tools = [
         ToolDefinition(
             name="get_weather",
-            description=(
-                "Get weather of a location, " "the user should supply a location first."
-            ),
+            description=("Get weather of a location, " "the user should supply a location first."),
             parameters={
                 "type": "object",
                 "properties": {
@@ -48,8 +46,7 @@ async def main():
         Message(
             role="user",
             content=(
-                "Please use the get_weather tool to check the weather "
-                "in San Francisco, US."
+                "Please use the get_weather tool to check the weather " "in San Francisco, US."
             ),
         )
     ]

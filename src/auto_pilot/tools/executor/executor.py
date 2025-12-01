@@ -60,9 +60,7 @@ class ToolExecutor:
 
         logger.info("Enhanced ToolExecutor initialized")
 
-    def register_tool_implementation(
-        self, tool_name: str, implementation: Callable
-    ) -> None:
+    def register_tool_implementation(self, tool_name: str, implementation: Callable) -> None:
         """Register a tool implementation.
 
         Args:
@@ -156,9 +154,7 @@ class ToolExecutor:
             return result
 
         except Exception as e:
-            logger.error(
-                "Unexpected error during tool execution: %s", str(e), exc_info=True
-            )
+            logger.error("Unexpected error during tool execution: %s", str(e), exc_info=True)
             return ExecutionResult.error_result(
                 error=f"Unexpected error: {str(e)}",
                 error_type="internal_error",
@@ -204,9 +200,7 @@ class ToolExecutor:
                     return result
 
                 # Check if error is retryable
-                if not self.retry_manager.is_retryable_error(
-                    result.error, result.error_type
-                ):
+                if not self.retry_manager.is_retryable_error(result.error, result.error_type):
                     return result
 
                 if attempt < max_retries:
@@ -215,9 +209,7 @@ class ToolExecutor:
                         attempt + 2,
                         max_retries + 1,
                     )
-                    await asyncio.sleep(
-                        retry_delay * (2**attempt)
-                    )  # Exponential backoff
+                    await asyncio.sleep(retry_delay * (2**attempt))  # Exponential backoff
 
             except asyncio.TimeoutError:
                 if attempt < max_retries:

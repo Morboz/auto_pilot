@@ -160,9 +160,7 @@ async def demo_websocket():
                 print(f"   Event {event_count}: {message['event']}")
 
                 if message["event"] == "finished":
-                    print(
-                        f"   Final output: {message['data'].get('final_output', 'N/A')}"
-                    )
+                    print(f"   Final output: {message['data'].get('final_output', 'N/A')}")
                     break
 
                 # Send ping to keep connection alive

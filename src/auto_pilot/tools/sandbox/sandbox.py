@@ -84,9 +84,7 @@ class ToolSandbox:
 
         except asyncio.TimeoutError:
             execution_time = time.time() - start_time
-            logger.warning(
-                "Tool '%s' execution timed out after %ss", tool.name, timeout
-            )
+            logger.warning("Tool '%s' execution timed out after %ss", tool.name, timeout)
             return SandboxResult(
                 success=False,
                 error_message=f"Execution timed out after {timeout}s",
@@ -194,8 +192,7 @@ class ToolSandbox:
             cpu_percent=after.get("cpu_percent", 0) - before.get("cpu_percent", 0),
             memory_mb=after.get("memory_mb", 0),
             disk_read_mb=after.get("disk_read_mb", 0) - before.get("disk_read_mb", 0),
-            disk_write_mb=after.get("disk_write_mb", 0)
-            - before.get("disk_write_mb", 0),
+            disk_write_mb=after.get("disk_write_mb", 0) - before.get("disk_write_mb", 0),
             execution_time_seconds=execution_time,
             peak_memory_mb=after.get("memory_mb", 0),
         )
@@ -275,9 +272,7 @@ class ResourceMonitor:
             "measurements": len(self.measurements),
             "avg_cpu_percent": sum(cpu_values) / len(cpu_values) if cpu_values else 0,
             "max_cpu_percent": max(cpu_values) if cpu_values else 0,
-            "avg_memory_mb": sum(memory_values) / len(memory_values)
-            if memory_values
-            else 0,
+            "avg_memory_mb": sum(memory_values) / len(memory_values) if memory_values else 0,
             "max_memory_mb": max(memory_values) if memory_values else 0,
         }
 
@@ -309,8 +304,7 @@ class ResourceMonitor:
             if cpu_percent > limits.max_cpu_percent:
                 return (
                     False,
-                    f"CPU usage {cpu_percent:.1f}% "
-                    f"exceeds limit {limits.max_cpu_percent}%",
+                    f"CPU usage {cpu_percent:.1f}% " f"exceeds limit {limits.max_cpu_percent}%",
                 )
 
             return True, None
@@ -341,9 +335,7 @@ class OutputSanitizer:
         ]
         logger.info("OutputSanitizer initialized")
 
-    def sanitize(
-        self, output: str, permissions: Optional[ToolPermissions] = None
-    ) -> str:
+    def sanitize(self, output: str, permissions: Optional[ToolPermissions] = None) -> str:
         """Sanitize output.
 
         Args:

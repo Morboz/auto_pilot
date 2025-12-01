@@ -64,9 +64,7 @@ async def lifespan(app: FastAPI):
         executor=app.state.tool_executor,
     )
     loader.load_builtin_tools()
-    logger.info(
-        "✅ 已加载 %d 个工具", len(app.state.tool_system["registry"].list_tools())
-    )
+    logger.info("✅ 已加载 %d 个工具", len(app.state.tool_system["registry"].list_tools()))
 
     yield
 
@@ -96,20 +94,14 @@ app.include_router(execution.router)
 async def health_check(request: Request):
     """健康检查端点"""
     tool_count = 0
-    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get(
-        "registry"
-    ):
+    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get("registry"):
         tool_count = len(request.app.state.tool_system["registry"]._tools)
 
     return {
         "status": "healthy",
         "database": "connected",
-        "execution": "enabled"
-        if getattr(request.app.state, "llm_adapter", None)
-        else "disabled",
-        "tool_system": "enabled"
-        if hasattr(request.app.state, "tool_system")
-        else "disabled",
+        "execution": "enabled" if getattr(request.app.state, "llm_adapter", None) else "disabled",
+        "tool_system": "enabled" if hasattr(request.app.state, "tool_system") else "disabled",
         "builtin_tools_loaded": tool_count,
     }
 
@@ -119,9 +111,7 @@ async def health_check(request: Request):
 async def read_root(request: Request):
     # Get tool count
     tool_count = 0
-    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get(
-        "registry"
-    ):
+    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get("registry"):
         tool_count = len(request.app.state.tool_system["registry"]._tools)
 
     return {
@@ -137,8 +127,7 @@ async def read_root(request: Request):
             "execution": "/execution",
         },
         "features": {
-            "task_execution": getattr(request.app.state, "llm_adapter", None)
-            is not None,
+            "task_execution": getattr(request.app.state, "llm_adapter", None) is not None,
             "websocket_streaming": True,
             "builtin_tools": tool_count,
         },

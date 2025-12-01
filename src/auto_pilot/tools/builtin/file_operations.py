@@ -109,9 +109,7 @@ class FileWriteTool:
         )
 
     @staticmethod
-    async def execute(
-        file_path: str, content: str, create_dirs: bool = True
-    ) -> Dict[str, Any]:
+    async def execute(file_path: str, content: str, create_dirs: bool = True) -> Dict[str, Any]:
         """Execute file write operation.
 
         Args:

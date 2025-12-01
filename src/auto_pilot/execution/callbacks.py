@@ -29,25 +29,19 @@ class BaseExecutionCallback(ABC):
     async def on_step_started(self, task_id: str, step: int) -> None:
         """Called when a step starts."""
         await self.on_event(
-            ExecutionEvent(
-                type=EventType.STEP_STARTED, task_id=task_id, data={"step": step}
-            )
+            ExecutionEvent(type=EventType.STEP_STARTED, task_id=task_id, data={"step": step})
         )
 
     async def on_step_completed(self, task_id: str, step: int) -> None:
         """Called when a step completes."""
         await self.on_event(
-            ExecutionEvent(
-                type=EventType.STEP_COMPLETED, task_id=task_id, data={"step": step}
-            )
+            ExecutionEvent(type=EventType.STEP_COMPLETED, task_id=task_id, data={"step": step})
         )
 
     async def on_llm_response(self, task_id: str, content: str) -> None:
         """Called when LLM responds."""
         await self.on_event(
-            ExecutionEvent(
-                type=EventType.LLM_RESPONSE, task_id=task_id, data={"content": content}
-            )
+            ExecutionEvent(type=EventType.LLM_RESPONSE, task_id=task_id, data={"content": content})
         )
 
     async def on_tool_call_started(
@@ -62,9 +56,7 @@ class BaseExecutionCallback(ABC):
             )
         )
 
-    async def on_tool_call_completed(
-        self, task_id: str, record: ToolCallRecord
-    ) -> None:
+    async def on_tool_call_completed(self, task_id: str, record: ToolCallRecord) -> None:
         """Called when a tool call completes."""
         await self.on_event(
             ExecutionEvent(
@@ -84,9 +76,7 @@ class BaseExecutionCallback(ABC):
             )
         )
 
-    async def on_error(
-        self, task_id: str, error: Exception, step: Optional[int] = None
-    ) -> None:
+    async def on_error(self, task_id: str, error: Exception, step: Optional[int] = None) -> None:
         """Called when an error occurs."""
         await self.on_event(
             ExecutionEvent(
@@ -100,9 +90,7 @@ class BaseExecutionCallback(ABC):
             )
         )
 
-    async def on_finished(
-        self, task_id: str, final_output: Optional[str] = None
-    ) -> None:
+    async def on_finished(self, task_id: str, final_output: Optional[str] = None) -> None:
         """Called when task finishes."""
         await self.on_event(
             ExecutionEvent(
@@ -115,9 +103,7 @@ class BaseExecutionCallback(ABC):
     async def on_status_changed(self, task_id: str, status: str) -> None:
         """Called when execution status changes."""
         await self.on_event(
-            ExecutionEvent(
-                type=EventType.STATUS_CHANGED, task_id=task_id, data={"status": status}
-            )
+            ExecutionEvent(type=EventType.STATUS_CHANGED, task_id=task_id, data={"status": status})
         )
 
 
@@ -175,9 +161,7 @@ class CallbackManager:
         for callback in self._callbacks:
             await callback.on_tool_call_started(task_id, tool_name, arguments)
 
-    async def emit_tool_call_completed(
-        self, task_id: str, record: ToolCallRecord
-    ) -> None:
+    async def emit_tool_call_completed(self, task_id: str, record: ToolCallRecord) -> None:
         for callback in self._callbacks:
             await callback.on_tool_call_completed(task_id, record)
 
@@ -185,15 +169,11 @@ class CallbackManager:
         for callback in self._callbacks:
             await callback.on_tool_result(task_id, tool_name, result)
 
-    async def emit_error(
-        self, task_id: str, error: Exception, step: Optional[int] = None
-    ) -> None:
+    async def emit_error(self, task_id: str, error: Exception, step: Optional[int] = None) -> None:
         for callback in self._callbacks:
             await callback.on_error(task_id, error, step)
 
-    async def emit_finished(
-        self, task_id: str, final_output: Optional[str] = None
-    ) -> None:
+    async def emit_finished(self, task_id: str, final_output: Optional[str] = None) -> None:
         for callback in self._callbacks:
             await callback.on_finished(task_id, final_output)
 

@@ -38,7 +38,11 @@ async def example_basic_structured_output():
         ),
         Message(
             role="user",
-            content="Extract the person's details from this text: John Doe is a 30-year-old software engineer working at Tech Corp, earning $120,000 per year.",
+            content=(
+                "Extract the person's details from this text: John Doe is a "
+                "30-year-old software engineer working at Tech Corp, earning "
+                "$120,000 per year."
+            ),
         ),
     ]
 
@@ -66,9 +70,7 @@ async def example_basic_structured_output():
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            response = await adapter.structured_generate(
-                "claude-3-sonnet", messages, params
-            )
+            response = await adapter.structured_generate("claude-3-sonnet", messages, params)
 
             print("\nStructured Response:")
             print(f"Content: {response.content}")
@@ -115,7 +117,11 @@ async def example_nested_structured_output():
         Message(role="system", content="You extract structured data from text."),
         Message(
             role="user",
-            content="Extract project information: Our team has three projects: Project Alpha with 5 members and deadline in Q1, Project Beta with 3 members due in Q2, and Project Gamma with 8 members targeting Q3.",
+            content=(
+                "Extract project information: Our team has three projects: "
+                "Project Alpha with 5 members and deadline in Q1, Project Beta "
+                "with 3 members due in Q2, and Project Gamma with 8 members targeting Q3."
+            ),
         ),
     ]
 
@@ -150,9 +156,7 @@ async def example_nested_structured_output():
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            response = await adapter.structured_generate(
-                "claude-3-sonnet", messages, params
-            )
+            response = await adapter.structured_generate("claude-3-sonnet", messages, params)
 
             print("\nStructured Response:")
             print(f"Content: {response.content}")
@@ -238,9 +242,7 @@ async def example_data_extraction():
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            response = await adapter.structured_generate(
-                "claude-3-sonnet", messages, params
-            )
+            response = await adapter.structured_generate("claude-3-sonnet", messages, params)
 
             print("\nStructured Response:")
             print(f"Content: {response.content}")
@@ -302,9 +304,7 @@ async def example_comparison():
     from auto_pilot.llm import GenerationParams
 
     unstructured_params = GenerationParams(temperature=0.7, max_tokens=200)
-    unstructured_response = await adapter.generate(
-        "claude-3-sonnet", messages, unstructured_params
-    )
+    unstructured_response = await adapter.generate("claude-3-sonnet", messages, unstructured_params)
     print(unstructured_response.content)
 
     print("\n--- Structured Output ---")

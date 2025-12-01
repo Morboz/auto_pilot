@@ -26,9 +26,9 @@ async def get_tool_system(request: Request):
     Raises:
         HTTPException: 如果工具系统未初始化
     """
-    if not hasattr(
-        request.app.state, "tool_system"
-    ) or not request.app.state.tool_system.get("registry"):
+    if not hasattr(request.app.state, "tool_system") or not request.app.state.tool_system.get(
+        "registry"
+    ):
         raise HTTPException(status_code=503, detail="Tool system not initialized")
 
     return request.app.state.tool_system
@@ -142,15 +142,11 @@ async def execute_tool(
                 task_id=task_id,
                 tool_name=tool_name,
                 input_params=json.dumps(request.arguments),
-                output=json.dumps(result.result)
-                if result.success and result.result
-                else None,
+                output=json.dumps(result.result) if result.success and result.result else None,
                 error_message=result.error if not result.success else None,
                 duration_ms=result.execution_time_ms,
                 sandbox_enabled=True,
-                resource_usage=json.dumps(result.resource_usage)
-                if result.resource_usage
-                else None,
+                resource_usage=json.dumps(result.resource_usage) if result.resource_usage else None,
             )
 
             session.add(log)
@@ -158,9 +154,7 @@ async def execute_tool(
             logger.info("✅ Tool execution log saved to DB with id: %s", log.id)
         except Exception as db_error:
             # Don't fail the request if DB logging fails
-            logger.error(
-                "❌ Failed to save tool execution log: %s", db_error, exc_info=True
-            )
+            logger.error("❌ Failed to save tool execution log: %s", db_error, exc_info=True)
 
         return ToolExecuteResponse(
             tool_name=tool_name,

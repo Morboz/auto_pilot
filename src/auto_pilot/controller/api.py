@@ -88,9 +88,7 @@ class TaskController:
             # Add default WebSocket callback if connections exist
             if task_id in self._websocket_connections:
                 self.executor.add_callback(
-                    WebSocketStreamCallback(
-                        task_id, self._websocket_connections[task_id]
-                    )
+                    WebSocketStreamCallback(task_id, self._websocket_connections[task_id])
                 )
 
             # Run task

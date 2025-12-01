@@ -69,9 +69,7 @@ class OpenAIAdapter(BaseLLMAdapter):
         # Model capabilities cache
         self._capabilities_cache: Dict[str, ModelCapabilities] = {}
 
-    def _convert_messages_to_openai(
-        self, messages: List[Message]
-    ) -> List[Dict[str, Any]]:
+    def _convert_messages_to_openai(self, messages: List[Message]) -> List[Dict[str, Any]]:
         """Convert internal message format to OpenAI format.
 
         Args:

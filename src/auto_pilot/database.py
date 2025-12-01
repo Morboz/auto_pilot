@@ -24,9 +24,7 @@ engine = create_async_engine(
 )
 
 # 创建异步会话工厂
-AsyncSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def create_db_and_tables() -> None:

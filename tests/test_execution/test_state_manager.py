@@ -140,12 +140,8 @@ class TestStateManager:
         """Test getting all task IDs."""
         state_manager = StateManager()
 
-        await state_manager.create_state(
-            TaskContext(task_id="task-9", user_input="Test1")
-        )
-        await state_manager.create_state(
-            TaskContext(task_id="task-10", user_input="Test2")
-        )
+        await state_manager.create_state(TaskContext(task_id="task-9", user_input="Test1"))
+        await state_manager.create_state(TaskContext(task_id="task-10", user_input="Test2"))
 
         ids = await state_manager.get_task_ids()
         assert "task-9" in ids

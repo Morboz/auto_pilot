@@ -23,15 +23,9 @@ class Task(SQLModel, table=True):
         index=True,
         description="任务状态（pending/running/failed/success）",
     )
-    result_text: Optional[str] = Field(
-        default=None, description="最终结果（文本或 JSON 字符串）"
-    )
+    result_text: Optional[str] = Field(default=None, description="最终结果（文本或 JSON 字符串）")
     meta: Optional[str] = Field(
         default=None, description="任务额外信息（JSON 字符串，如 riskLevel=high）"
     )
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow, description="创建时间"
-    )
-    updated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="更新时间"
-    )
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
+    updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新时间")

@@ -128,10 +128,7 @@ async def main():
         print(f"Successful: {metrics.get('successful_executions', 0)}")
         print(f"Failed: {metrics.get('failed_executions', 0)}")
         print(f"Success Rate: {metrics.get('success_rate', 0):.1%}")
-        print(
-            f"Avg Execution Time: "
-            f"{metrics.get('average_execution_time_ms', 0):.2f}ms"
-        )
+        print(f"Avg Execution Time: " f"{metrics.get('average_execution_time_ms', 0):.2f}ms")
 
     print("\n" + "=" * 80)
     print("Demo completed!")

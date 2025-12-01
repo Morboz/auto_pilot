@@ -64,13 +64,9 @@ class PermissionValidator:
             ValueError: If access is invalid
         """
         if access_type == "filesystem":
-            return self._validate_filesystem_access(
-                permissions.filesystem, resource, operation
-            )
+            return self._validate_filesystem_access(permissions.filesystem, resource, operation)
         elif access_type == "network":
-            return self._validate_network_access(
-                permissions.network, resource, operation
-            )
+            return self._validate_network_access(permissions.network, resource, operation)
         else:
             raise ValueError(f"Unknown access type: {access_type}")
 
@@ -128,9 +124,7 @@ class PermissionValidator:
         """
         # Validate CPU percentage
         if resource_limits.max_cpu_percent < 0 or resource_limits.max_cpu_percent > 100:
-            raise ValueError(
-                f"Invalid CPU percentage: {resource_limits.max_cpu_percent}"
-            )
+            raise ValueError(f"Invalid CPU percentage: {resource_limits.max_cpu_percent}")
 
         # Validate memory (must be positive)
         if resource_limits.max_memory_mb <= 0:
@@ -138,9 +132,7 @@ class PermissionValidator:
 
         # Validate disk space (must be positive)
         if resource_limits.max_disk_space_mb <= 0:
-            raise ValueError(
-                f"Invalid disk space limit: {resource_limits.max_disk_space_mb}"
-            )
+            raise ValueError(f"Invalid disk space limit: {resource_limits.max_disk_space_mb}")
 
         # Validate execution time (must be positive)
         if resource_limits.max_execution_time_seconds <= 0:
@@ -160,9 +152,7 @@ class PermissionValidator:
             ValueError: If policy is invalid
         """
         # Validate imports
-        for import_name in (
-            security_policy.allowed_imports + security_policy.blocked_imports
-        ):
+        for import_name in security_policy.allowed_imports + security_policy.blocked_imports:
             if not isinstance(import_name, str):
                 raise ValueError(f"Invalid import name type: {type(import_name)}")
 
@@ -171,15 +161,11 @@ class PermissionValidator:
             if not isinstance(var_name, str):
                 raise ValueError(f"Invalid environment variable name: {type(var_name)}")
             if not isinstance(var_value, str):
-                raise ValueError(
-                    f"Invalid environment variable value: {type(var_value)}"
-                )
+                raise ValueError(f"Invalid environment variable value: {type(var_value)}")
 
         logger.debug("Security policy validation passed")
 
-    def _validate_filesystem_access(
-        self, fs_perm, resource: str, operation: str
-    ) -> bool:
+    def _validate_filesystem_access(self, fs_perm, resource: str, operation: str) -> bool:
         """Validate filesystem access request.
 
         Args:
@@ -195,17 +181,13 @@ class PermissionValidator:
         """
         # Check operation
         if operation not in fs_perm.operations:
-            raise ValueError(
-                f"Operation '{operation}' not allowed by filesystem permissions"
-            )
+            raise ValueError(f"Operation '{operation}' not allowed by filesystem permissions")
 
         # Check path (simplified validation)
         if not isinstance(resource, str):
             raise ValueError(f"Invalid resource path type: {type(resource)}")
 
-        logger.debug(
-            f"Filesystem access validation passed for {operation} on {resource}"
-        )
+        logger.debug(f"Filesystem access validation passed for {operation} on {resource}")
         return True
 
     def _validate_network_access(self, net_perm, resource: str, operation: str) -> bool:
@@ -229,9 +211,7 @@ class PermissionValidator:
         if not isinstance(resource, str):
             raise ValueError(f"Invalid network resource type: {type(resource)}")
 
-        logger.debug(
-            "Network access validation passed for %s on %s", operation, resource
-        )
+        logger.debug("Network access validation passed for %s on %s", operation, resource)
         return True
 
     def check_permission_compatibility(
@@ -298,9 +278,7 @@ class PermissionValidator:
             return False
         return True
 
-    def generate_permission_summary(
-        self, permissions: ToolPermissions
-    ) -> Dict[str, Any]:
+    def generate_permission_summary(self, permissions: ToolPermissions) -> Dict[str, Any]:
         """Generate a human-readable summary of permissions.
 
         Args:

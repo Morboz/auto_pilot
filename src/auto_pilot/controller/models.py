@@ -35,12 +35,8 @@ class TaskStatusResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
     created_at: str = Field(..., description="Creation timestamp")
     updated_at: str = Field(..., description="Last update timestamp")
-    steps: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Execution steps"
-    )
-    tool_calls: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Tool call history"
-    )
+    steps: List[Dict[str, Any]] = Field(default_factory=list, description="Execution steps")
+    tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Tool call history")
 
 
 class ApiResponse(BaseModel):

@@ -35,9 +35,7 @@ async def simulate_tool_execution(tool_name: str, arguments: dict) -> str:
 
     elif tool_name == "search_news":
         query = arguments.get("query", "Unknown")
-        return (
-            f"关于'{query}'的最新新闻：1) AI技术突破... 2) 新产品发布... 3) 市场趋势..."
-        )
+        return f"关于'{query}'的最新新闻：1) AI技术突破... 2) 新产品发布... 3) 市场趋势..."
 
     return "Tool executed successfully"
 
@@ -83,9 +81,7 @@ async def main():
             description="Search for latest news about a topic",
             parameters={
                 "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Search query or topic"}
-                },
+                "properties": {"query": {"type": "string", "description": "Search query or topic"}},
                 "required": ["query"],
             },
         ),
@@ -104,9 +100,7 @@ async def main():
     messages = [
         Message(
             role="user",
-            content=(
-                "Please check the weather in San Francisco, US using the get_weather tool."
-            ),
+            content=("Please check the weather in San Francisco, US using the get_weather tool."),
         )
     ]
 

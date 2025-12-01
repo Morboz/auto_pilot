@@ -51,10 +51,7 @@ class TestPermissionManager:
         )
         manager.set_tool_permissions("test_tool", perms)
 
-        assert (
-            manager.check_filesystem_access("test_tool", "/tmp/file.txt", "read")
-            is True
-        )
+        assert manager.check_filesystem_access("test_tool", "/tmp/file.txt", "read") is True
 
     def test_check_filesystem_access_denied(self):
         """Test filesystem access check - denied."""
@@ -70,15 +67,10 @@ class TestPermissionManager:
         manager.set_tool_permissions("test_tool", perms)
 
         # Denied path
-        assert (
-            manager.check_filesystem_access("test_tool", "/etc/passwd", "read") is False
-        )
+        assert manager.check_filesystem_access("test_tool", "/etc/passwd", "read") is False
 
         # Operation not allowed
-        assert (
-            manager.check_filesystem_access("test_tool", "/tmp/file.txt", "write")
-            is False
-        )
+        assert manager.check_filesystem_access("test_tool", "/tmp/file.txt", "write") is False
 
     def test_check_network_access_disabled(self):
         """Test network access check when disabled."""
@@ -222,10 +214,7 @@ class TestPermissionValidator:
         )
 
         assert (
-            validator.validate_access_request(
-                perms, "filesystem", "/tmp/test.txt", "read"
-            )
-            is True
+            validator.validate_access_request(perms, "filesystem", "/tmp/test.txt", "read") is True
         )
 
     def test_generate_permission_summary(self):

@@ -36,9 +36,7 @@ class LoggingCallback(BaseExecutionCallback):
     async def on_llm_response(self, task_id: str, content: str) -> None:
         print(f"🧠 LLM: {content[:100]}...")
 
-    async def on_tool_call_started(
-        self, task_id: str, tool_name: str, arguments: dict
-    ) -> None:
+    async def on_tool_call_started(self, task_id: str, tool_name: str, arguments: dict) -> None:
         print(f"🛠️  Calling tool: {tool_name} with args {arguments}")
 
     async def on_finished(self, task_id: str, final_output: str) -> None:

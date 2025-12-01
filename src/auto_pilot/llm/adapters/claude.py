@@ -83,9 +83,7 @@ class ClaudeAdapter(BaseLLMAdapter):
         # Model capabilities cache
         self._capabilities_cache: Dict[str, ModelCapabilities] = {}
 
-    def _convert_messages_to_claude(
-        self, messages: List[InternalMessage]
-    ) -> Dict[str, Any]:
+    def _convert_messages_to_claude(self, messages: List[InternalMessage]) -> Dict[str, Any]:
         """Convert internal message format to Claude format.
 
         Args:
@@ -520,9 +518,7 @@ class ClaudeAdapter(BaseLLMAdapter):
                             index = event.index
                             if index not in tool_calls_map:
                                 tool_calls_map[index] = {"arguments": ""}
-                            tool_calls_map[index]["arguments"] += (
-                                event.delta.partial_json
-                            )
+                            tool_calls_map[index]["arguments"] += event.delta.partial_json
 
                     elif event.type == "content_block_start":
                         # Tool use started

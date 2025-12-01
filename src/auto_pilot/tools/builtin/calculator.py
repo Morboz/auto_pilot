@@ -70,9 +70,7 @@ class CalculatorTool:
         elif isinstance(node, ast.UnaryOp):
             op = CalculatorTool._OPERATORS.get(type(node.op))
             if op is None:
-                raise ValueError(
-                    f"Unsupported unary operator: {type(node.op).__name__}"
-                )
+                raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
             operand = CalculatorTool._eval_expr(node.operand)
             return op(operand)
         else:

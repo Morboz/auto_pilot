@@ -230,9 +230,7 @@ class SecurityPolicyEnforcer:
         self._audit_log.clear()
         logger.info("Audit log cleared")
 
-    def _validate_import_against_policy(
-        self, import_name: str, policy: SecurityPolicy
-    ) -> bool:
+    def _validate_import_against_policy(self, import_name: str, policy: SecurityPolicy) -> bool:
         """Validate import against a specific security policy.
 
         Args:
@@ -283,9 +281,7 @@ class SecurityPolicyEnforcer:
 
         return False
 
-    def _log_security_event(
-        self, event_type: str, tool_name: str, message: str
-    ) -> None:
+    def _log_security_event(self, event_type: str, tool_name: str, message: str) -> None:
         """Log a security event.
 
         Args:
@@ -293,13 +289,9 @@ class SecurityPolicyEnforcer:
             tool_name: Name of the tool
             message: Event message
         """
-        logger.warning(
-            f"Security event '{event_type}' for tool '{tool_name}': {message}"
-        )
+        logger.warning(f"Security event '{event_type}' for tool '{tool_name}': {message}")
 
-    def generate_security_report(
-        self, tool_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def generate_security_report(self, tool_name: Optional[str] = None) -> Dict[str, Any]:
         """Generate a security report.
 
         Args:
@@ -311,9 +303,7 @@ class SecurityPolicyEnforcer:
         audit_entries = self.get_audit_log(tool_name)
 
         total_executions = len(audit_entries)
-        successful_executions = sum(
-            1 for entry in audit_entries if entry.get("success")
-        )
+        successful_executions = sum(1 for entry in audit_entries if entry.get("success"))
         failed_executions = total_executions - successful_executions
 
         security_events = {}
@@ -328,9 +318,7 @@ class SecurityPolicyEnforcer:
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": successful_executions / total_executions
-            if total_executions > 0
-            else 0,
+            "success_rate": successful_executions / total_executions if total_executions > 0 else 0,
             "security_events": security_events,
             "report_generated": datetime.now(),
         }

@@ -55,9 +55,7 @@ class PermissionManager:
 
         logger.info("PermissionManager initialized")
 
-    def set_tool_permissions(
-        self, tool_name: str, permissions: ToolPermissions
-    ) -> None:
+    def set_tool_permissions(self, tool_name: str, permissions: ToolPermissions) -> None:
         """Set permissions for a specific tool.
 
         Args:
@@ -124,9 +122,7 @@ class PermissionManager:
         # Check denied paths first (explicit deny takes precedence)
         for denied_path in fs_perm.denied_paths:
             if self._path_matches(path_str, denied_path):
-                logger.warning(
-                    "Tool '%s' denied access to '%s' (denied path)", tool_name, path_str
-                )
+                logger.warning("Tool '%s' denied access to '%s' (denied path)", tool_name, path_str)
                 return False
 
         # Check allowed paths
@@ -189,9 +185,7 @@ class PermissionManager:
         net_perm = permissions.network
 
         if not net_perm.enabled:
-            logger.warning(
-                "Tool '%s' denied network access (networking disabled)", tool_name
-            )
+            logger.warning("Tool '%s' denied network access (networking disabled)", tool_name)
             return False
 
         # Check denied hosts first
@@ -222,17 +216,13 @@ class PermissionManager:
 
         # Check allowed ports
         if net_perm.allowed_ports and port not in net_perm.allowed_ports:
-            logger.warning(
-                "Tool '%s' denied access to port %d (port not allowed)", tool_name, port
-            )
+            logger.warning("Tool '%s' denied access to port %d (port not allowed)", tool_name, port)
             return False
 
         logger.debug("Tool '%s' granted network access to %s:%d", tool_name, host, port)
         return True
 
-    def check_resource_limits(
-        self, tool_name: str, current_usage: Dict[str, float]
-    ) -> bool:
+    def check_resource_limits(self, tool_name: str, current_usage: Dict[str, float]) -> bool:
         """Check if current resource usage is within limits.
 
         Args:
@@ -446,18 +436,14 @@ class PermissionManager:
             # Check cache first
             cached_perm = self._get_cached_permission(agent_id, tool_name)
             if cached_perm:
-                logger.debug(
-                    "Cache hit for tool '%s' and agent '%s'", tool_name, agent_id
-                )
+                logger.debug("Cache hit for tool '%s' and agent '%s'", tool_name, agent_id)
                 return cached_perm
 
             # Query database
             from auto_pilot.models import Tool
 
             # Get tool by name
-            tool_result = await self._db_session.execute(
-                select(Tool).where(Tool.name == tool_name)
-            )
+            tool_result = await self._db_session.execute(select(Tool).where(Tool.name == tool_name))
             tool = tool_result.scalar_one_or_none()
 
             if not tool:
@@ -561,9 +547,7 @@ class PermissionManager:
         """
         # 1. Try database (highest priority)
         if agent_id and self._db_session:
-            db_permissions = await self.get_tool_permissions_from_db(
-                tool_name, agent_id
-            )
+            db_permissions = await self.get_tool_permissions_from_db(tool_name, agent_id)
             if db_permissions:
                 return db_permissions
 
@@ -574,9 +558,7 @@ class PermissionManager:
         # 3. Return default
         return self._default_permissions
 
-    def _get_cached_permission(
-        self, agent_id: str, tool_name: str
-    ) -> Optional[ToolPermissions]:
+    def _get_cached_permission(self, agent_id: str, tool_name: str) -> Optional[ToolPermissions]:
         """Get permission from cache if not expired.
 
         Args:
@@ -653,9 +635,7 @@ class PermissionManager:
         """
         if agent_id:
             # Clear cache for specific agent
-            agent_keys = [
-                k for k in self._cache_ttl.keys() if k.startswith(f"{agent_id}:")
-            ]
+            agent_keys = [k for k in self._cache_ttl.keys() if k.startswith(f"{agent_id}:")]
             for key in agent_keys:
                 self._cache_ttl.pop(key, None)
 

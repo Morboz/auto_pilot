@@ -5,7 +5,6 @@ from .permissions import PermissionManager, PermissionValidator, SecurityPolicyE
 from .registry import SchemaValidator, ToolRegistry
 from .sandbox import OutputSanitizer, ResourceMonitor, ToolSandbox
 from .types import (
-    ExecutionContext,
     ExecutionResult,
     PermissionLevel,
     ResourceLimits,

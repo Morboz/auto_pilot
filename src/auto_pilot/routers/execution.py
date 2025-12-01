@@ -15,9 +15,9 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from sqlalchemy import text
 
 from auto_pilot.database import get_session
 from auto_pilot.execution import (
@@ -37,10 +37,7 @@ router = APIRouter(prefix="/execution", tags=["execution"])
 
 def get_llm_adapter(request: Request) -> BaseLLMAdapter:
     """Get LLM adapter instance from app state."""
-    if (
-        not hasattr(request.app.state, "llm_adapter")
-        or request.app.state.llm_adapter is None
-    ):
+    if not hasattr(request.app.state, "llm_adapter") or request.app.state.llm_adapter is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="LLM adapter not initialized",
@@ -143,9 +140,7 @@ async def start_execution(
 
         # Check if agent exists, if not create a default one
         result = await session.execute(select(Task).where(Task.agent_id == agent_uuid))
-        agent_exists = await session.execute(
-            select(AgentModel).where(AgentModel.id == agent_uuid)
-        )
+        agent_exists = await session.execute(select(AgentModel).where(AgentModel.id == agent_uuid))
         agent_record = agent_exists.scalar_one_or_none()
 
         if not agent_record:
@@ -329,12 +324,8 @@ async def get_execution_status(
                     "max_steps": state.max_steps,
                     "final_output": state.final_output,
                     "error": state.error,
-                    "created_at": state.created_at.isoformat()
-                    if state.created_at
-                    else None,
-                    "updated_at": state.updated_at.isoformat()
-                    if state.updated_at
-                    else None,
+                    "created_at": state.created_at.isoformat() if state.created_at else None,
+                    "updated_at": state.updated_at.isoformat() if state.updated_at else None,
                     "steps": [step.model_dump() for step in state.steps],
                     "tool_calls": [call.model_dump() for call in state.tool_calls],
                 }
@@ -392,15 +383,12 @@ async def _execute_task_wrapper(
 ):
     """Wrapper for executing task with proper cleanup."""
     try:
-        output = await executor.run(
-            task_input, tools=tools, config=config, session=session
-        )
+        output = await executor.run(task_input, tools=tools, config=config, session=session)
 
         # Update database record with final result
         await session.execute(
             text(
-                "UPDATE task SET status = 'completed', "
-                "result_text = :result WHERE id = :task_id"
+                "UPDATE task SET status = 'completed', " "result_text = :result WHERE id = :task_id"
             ),
             {
                 "task_id": task_id,

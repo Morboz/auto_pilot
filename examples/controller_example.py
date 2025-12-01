@@ -157,9 +157,7 @@ async def example_websocket():
                 print(f"   Event {event_count}: {message['event']}")
 
                 if message["event"] == "finished":
-                    print(
-                        f"   Final output: {message['data'].get('final_output', 'N/A')}"
-                    )
+                    print(f"   Final output: {message['data'].get('final_output', 'N/A')}")
                     break
 
                 # Send ping to keep connection alive
@@ -187,9 +185,7 @@ async def example_task_control():
 
     # Start a task
     print("\n1. Starting a task...")
-    response = client.post(
-        "/agents/agent-789/tasks", json={"input": "Long running analysis task"}
-    )
+    response = client.post("/agents/agent-789/tasks", json={"input": "Long running analysis task"})
     task_id = response.json()["task_id"]
     print(f"Task ID: {task_id}")
 

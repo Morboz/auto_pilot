@@ -33,9 +33,7 @@ class ExecutionMetrics:
             if hasattr(result, "execution_time_ms")
             else 0.0,
             "error_type": result.error_type if hasattr(result, "error_type") else None,
-            "resource_usage": result.resource_usage
-            if hasattr(result, "resource_usage")
-            else None,
+            "resource_usage": result.resource_usage if hasattr(result, "resource_usage") else None,
         }
 
         self.executions.append(execution)
@@ -56,9 +54,7 @@ class ExecutionMetrics:
             Dictionary with metrics
         """
         executions = (
-            self.metrics_by_tool.get(tool_name, self.executions)
-            if tool_name
-            else self.executions
+            self.metrics_by_tool.get(tool_name, self.executions) if tool_name else self.executions
         )
 
         if not executions:
@@ -128,9 +124,7 @@ class ExecutionMetrics:
         """
         cutoff_time = datetime.now() - timedelta(hours=hours)
         executions = (
-            self.metrics_by_tool.get(tool_name, self.executions)
-            if tool_name
-            else self.executions
+            self.metrics_by_tool.get(tool_name, self.executions) if tool_name else self.executions
         )
 
         recent_executions = [e for e in executions if e["timestamp"] > cutoff_time]
@@ -197,14 +191,9 @@ class ExecutionMetrics:
                 error_counts[error_type]["count"] += 1
                 error_counts[error_type]["last_seen"] = execution["timestamp"]
 
-        sorted_errors = sorted(
-            error_counts.items(), key=lambda x: x[1]["count"], reverse=True
-        )
+        sorted_errors = sorted(error_counts.items(), key=lambda x: x[1]["count"], reverse=True)
 
-        return [
-            {"error_type": error_type, **info}
-            for error_type, info in sorted_errors[:limit]
-        ]
+        return [{"error_type": error_type, **info} for error_type, info in sorted_errors[:limit]]
 
     def clear(self) -> None:
         """Clear all metrics."""

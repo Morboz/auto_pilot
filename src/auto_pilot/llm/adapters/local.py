@@ -64,9 +64,7 @@ class LocalAdapter(BaseLLMAdapter):
         self.base_url = base_url
         self._capabilities_cache: Dict[str, ModelCapabilities] = {}
 
-    def _convert_messages_to_openai(
-        self, messages: List[Message]
-    ) -> List[Dict[str, Any]]:
+    def _convert_messages_to_openai(self, messages: List[Message]) -> List[Dict[str, Any]]:
         """Convert internal message format to OpenAI format.
 
         Args:
@@ -96,9 +94,7 @@ class LocalAdapter(BaseLLMAdapter):
                 # We'll include as regular content
                 openai_msg = {
                     "role": "assistant",
-                    "content": (
-                        f"Tool call: {msg.name}\n" f"Arguments: {msg.content or '{}'}"
-                    ),
+                    "content": (f"Tool call: {msg.name}\n" f"Arguments: {msg.content or '{}'}"),
                 }
             else:
                 openai_msg = {

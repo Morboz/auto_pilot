@@ -58,9 +58,7 @@ class ExecutionContextManager:
         # Store context
         self._contexts[execution_id] = execution_context
 
-        logger.info(
-            "Created execution context %s for tool '%s'", execution_id, tool_name
-        )
+        logger.info("Created execution context %s for tool '%s'", execution_id, tool_name)
         return execution_context
 
     def get_context(self, execution_id: str) -> Optional[Dict[str, Any]]:

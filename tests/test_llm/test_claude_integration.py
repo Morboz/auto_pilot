@@ -124,9 +124,7 @@ class TestClaudeToolCalling:
         """Create a weather tool definition."""
         return ToolDefinition(
             name="get_weather",
-            description=(
-                "Get weather of a location, " "the user should supply a location first."
-            ),
+            description=("Get weather of a location, " "the user should supply a location first."),
             parameters={
                 "type": "object",
                 "properties": {
@@ -148,8 +146,7 @@ class TestClaudeToolCalling:
             Message(
                 role="user",
                 content=(
-                    "Please use the get_weather tool to check the weather "
-                    "in San Francisco, US."
+                    "Please use the get_weather tool to check the weather " "in San Francisco, US."
                 ),
             )
         ]
@@ -204,9 +201,7 @@ class TestClaudeToolCalling:
         has_weather = "sunny" in final_response.content.lower()
         assert has_temp or has_weather
 
-    async def test_tool_calling_without_explicit_instruction(
-        self, adapter, weather_tool
-    ):
+    async def test_tool_calling_without_explicit_instruction(self, adapter, weather_tool):
         """Test that model can decide to use tool without explicit instruction."""
         tools = [weather_tool]
 

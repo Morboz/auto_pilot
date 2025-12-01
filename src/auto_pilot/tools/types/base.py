@@ -80,9 +80,7 @@ class ExecutionResult(BaseModel):
         cls, result: Any, execution_time_ms: float = 0.0, **kwargs
     ) -> "ExecutionResult":
         """Create a successful execution result."""
-        return cls(
-            success=True, result=result, execution_time_ms=execution_time_ms, **kwargs
-        )
+        return cls(success=True, result=result, execution_time_ms=execution_time_ms, **kwargs)
 
     @classmethod
     def error_result(

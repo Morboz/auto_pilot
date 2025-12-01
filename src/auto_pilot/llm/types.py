@@ -92,9 +92,7 @@ class GenerationParams(BaseModel):
 class StructuredGenerationParams(BaseModel):
     """Parameters for structured generation with JSON Schema."""
 
-    json_schema: Dict[str, Any] = Field(
-        ..., description="JSON Schema for structured output"
-    )
+    json_schema: Dict[str, Any] = Field(..., description="JSON Schema for structured output")
     temperature: float = 0.0
     max_tokens: Optional[int] = None
     strict: bool = True

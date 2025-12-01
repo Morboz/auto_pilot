@@ -19,9 +19,7 @@ class LLMConfig(BaseModel):
 
     provider: str = Field(..., description="Provider name: 'openai', 'claude', 'local'")
     api_key: Optional[str] = Field(None, description="API key for the provider")
-    base_url: Optional[str] = Field(
-        None, description="Custom base URL (for local providers)"
-    )
+    base_url: Optional[str] = Field(None, description="Custom base URL (for local providers)")
     default_model: str = Field(..., description="Default model to use")
     timeout: float = Field(60.0, description="Request timeout in seconds")
     max_retries: int = Field(3, description="Maximum retry attempts")
@@ -97,9 +95,7 @@ class ProviderFactory:
                     timeout=timeout,
                 )
         except Exception as e:
-            raise ConfigurationError(
-                f"Failed to create {provider} adapter: {str(e)}"
-            ) from e
+            raise ConfigurationError(f"Failed to create {provider} adapter: {str(e)}") from e
 
     @classmethod
     def create_adapter_from_config(cls, config: LLMConfig) -> BaseLLMAdapter:

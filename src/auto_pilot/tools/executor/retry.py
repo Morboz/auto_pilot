@@ -248,9 +248,7 @@ class RetryManager:
         """
         return attempt < max_retries
 
-    def add_custom_pattern(
-        self, pattern: str, category: str, is_retryable: bool
-    ) -> None:
+    def add_custom_pattern(self, pattern: str, category: str, is_retryable: bool) -> None:
         """Add a custom error pattern.
 
         Args:
@@ -305,9 +303,7 @@ class RetryStatistics:
         else:
             self.failed_retries += 1
 
-        self.retry_by_category[error_category] = (
-            self.retry_by_category.get(error_category, 0) + 1
-        )
+        self.retry_by_category[error_category] = self.retry_by_category.get(error_category, 0) + 1
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get retry statistics.
@@ -316,9 +312,7 @@ class RetryStatistics:
             Dictionary with statistics
         """
         total_retries = self.successful_retries + self.failed_retries
-        success_rate = (
-            self.successful_retries / total_retries if total_retries > 0 else 0
-        )
+        success_rate = self.successful_retries / total_retries if total_retries > 0 else 0
 
         return {
             "total_attempts": self.total_attempts,
@@ -326,9 +320,7 @@ class RetryStatistics:
             "failed_retries": self.failed_retries,
             "success_rate": success_rate,
             "retry_by_category": self.retry_by_category.copy(),
-            "average_delay_ms": self.total_delay_ms / total_retries
-            if total_retries > 0
-            else 0,
+            "average_delay_ms": self.total_delay_ms / total_retries if total_retries > 0 else 0,
         }
 
     def reset(self) -> None:

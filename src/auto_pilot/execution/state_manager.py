@@ -101,9 +101,7 @@ class StateManager:
             state.steps.append(step)
             await self.save_state(task_id, state)
 
-    async def update_execution_status(
-        self, task_id: str, status: ExecutionStatus
-    ) -> None:
+    async def update_execution_status(self, task_id: str, status: ExecutionStatus) -> None:
         """Update the execution status.
 
         Args:

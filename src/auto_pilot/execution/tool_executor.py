@@ -134,18 +134,14 @@ class ToolExecutor:
             required_fields = schema["required"]
             for field in required_fields:
                 if field not in arguments:
-                    raise ValueError(
-                        f"Missing required argument: {field} for tool {tool.name}"
-                    )
+                    raise ValueError(f"Missing required argument: {field} for tool {tool.name}")
 
         # Check properties exist
         if "properties" in schema:
             properties = schema["properties"]
             for arg_name in arguments:
                 if arg_name not in properties:
-                    raise ValueError(
-                        f"Unknown argument: {arg_name} for tool {tool.name}"
-                    )
+                    raise ValueError(f"Unknown argument: {arg_name} for tool {tool.name}")
 
     async def _execute_placeholder(
         self,

@@ -51,13 +51,9 @@ class ToolRegistry:
         # Validate schema if requested
         if validate_schema:
             try:
-                self._validator.validate_tool_schema(
-                    tool_definition.parameters.schema_dict
-                )
+                self._validator.validate_tool_schema(tool_definition.parameters.schema_dict)
             except Exception as e:
-                raise ValueError(
-                    f"Tool schema validation failed for '{tool_name}': {str(e)}"
-                )
+                raise ValueError(f"Tool schema validation failed for '{tool_name}': {str(e)}")
 
         # Update timestamps
         now = datetime.now()
@@ -82,9 +78,7 @@ class ToolRegistry:
         )
         return True
 
-    def get_tool(
-        self, tool_name: str, version: Optional[str] = None
-    ) -> Optional[ToolDefinition]:
+    def get_tool(self, tool_name: str, version: Optional[str] = None) -> Optional[ToolDefinition]:
         """Get a tool definition by name and optional version.
 
         Args:
@@ -228,9 +222,7 @@ class ToolRegistry:
         Returns:
             Dictionary with registry statistics
         """
-        deprecated_count = sum(
-            1 for tool in self._tools.values() if tool.metadata.deprecated
-        )
+        deprecated_count = sum(1 for tool in self._tools.values() if tool.metadata.deprecated)
 
         return {
             "total_tools": len(self._tools),
@@ -243,14 +235,10 @@ class ToolRegistry:
                     if tool.metadata.category
                 )
             ),
-            "total_versions": sum(
-                len(versions) for versions in self._tool_versions.values()
-            ),
+            "total_versions": sum(len(versions) for versions in self._tool_versions.values()),
         }
 
-    def validate_tool_parameters(
-        self, tool_name: str, parameters: Dict[str, Any]
-    ) -> bool:
+    def validate_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> bool:
         """Validate parameters against a tool's schema.
 
         Args:
@@ -267,9 +255,7 @@ class ToolRegistry:
         if not tool_def:
             raise ValueError(f"Tool '{tool_name}' not found in registry")
 
-        return self._validator.validate_parameters(
-            tool_def.parameters.schema_dict, parameters
-        )
+        return self._validator.validate_parameters(tool_def.parameters.schema_dict, parameters)
 
     def export_registry(self, include_deprecated: bool = True) -> Dict[str, Any]:
         """Export the entire registry as a dictionary.
@@ -292,9 +278,7 @@ class ToolRegistry:
             "stats": self.get_registry_stats(),
         }
 
-    def import_registry(
-        self, registry_data: Dict[str, Any], overwrite: bool = False
-    ) -> int:
+    def import_registry(self, registry_data: Dict[str, Any], overwrite: bool = False) -> int:
         """Import tools from a registry export.
 
         Args:
@@ -310,9 +294,7 @@ class ToolRegistry:
         for tool_name, tool_data in tools_data.items():
             try:
                 tool_def = ToolDefinition.parse_obj(tool_data)
-                self.register_tool(
-                    tool_def, validate_schema=True, overwrite_existing=overwrite
-                )
+                self.register_tool(tool_def, validate_schema=True, overwrite_existing=overwrite)
                 imported_count += 1
             except Exception as e:
                 logger.warning("Failed to import tool '%s': %s", tool_name, str(e))
