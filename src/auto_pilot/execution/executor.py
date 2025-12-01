@@ -8,6 +8,7 @@ import asyncio
 import json
 import random
 from typing import Any, Dict, List, Optional
+from uuid import UUID
 
 from auto_pilot.llm import BaseLLMAdapter, Message, ToolDefinition
 from auto_pilot.llm.errors import (
@@ -701,7 +702,6 @@ To indicate completion, simply state that the task is complete in your response.
             tool: Tool definition
             execution_result: Tool execution result
         """
-        from uuid import UUID
 
         try:
             # Convert task_id to UUID if it's a string

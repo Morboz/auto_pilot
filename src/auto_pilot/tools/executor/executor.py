@@ -1,6 +1,7 @@
 """Enhanced Tool Executor for orchestrating tool execution."""
 
 import asyncio
+import json
 import logging
 import time
 from typing import Any, Callable, Dict, List, Optional
@@ -441,12 +442,8 @@ class ToolExecutor:
         if result.success:
             # Format successful result
             if isinstance(result.result, dict):
-                import json
-
                 result_str = json.dumps(result.result, indent=2, ensure_ascii=False)
             elif isinstance(result.result, (list, tuple)):
-                import json
-
                 result_str = json.dumps(result.result, ensure_ascii=False)
             else:
                 result_str = str(result.result)

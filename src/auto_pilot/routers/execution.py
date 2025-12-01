@@ -1,5 +1,6 @@
 """Execution router - Task execution and monitoring endpoints."""
 
+import asyncio
 import json
 import uuid
 from typing import List, Optional
@@ -16,6 +17,7 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from sqlalchemy import text
 
 from auto_pilot.database import get_session
 from auto_pilot.execution import (
@@ -169,8 +171,6 @@ async def start_execution(
         await session.refresh(db_task)
 
         # Start execution in background
-        import asyncio
-
         asyncio.create_task(
             _execute_task_wrapper(executor, task_input, tools, config, session, task_id)
         )
@@ -203,8 +203,6 @@ async def pause_execution(
         await executor.pause(task_id)
 
         # Update database record
-        from sqlalchemy import text
-
         await session.execute(
             text("UPDATE task SET status = 'paused' WHERE id = :task_id"),
             {"task_id": task_id},
@@ -237,8 +235,6 @@ async def resume_execution(
         await executor.resume(task_id)
 
         # Update database record
-        from sqlalchemy import text
-
         await session.execute(
             text("UPDATE task SET status = 'running' WHERE id = :task_id"),
             {"task_id": task_id},
@@ -271,8 +267,6 @@ async def stop_execution(
         await executor.stop(task_id)
 
         # Update database record
-        from sqlalchemy import text
-
         await session.execute(
             text("UPDATE task SET status = 'stopped' WHERE id = :task_id"),
             {"task_id": task_id},
@@ -309,8 +303,6 @@ async def get_execution_status(
         state = await state_manager.load_state(task_id)
 
         # Get database record
-        from sqlalchemy import text
-
         result = await session.execute(
             text("SELECT * FROM task WHERE id = :task_id"), {"task_id": task_id}
         )
@@ -405,8 +397,6 @@ async def _execute_task_wrapper(
         )
 
         # Update database record with final result
-        from sqlalchemy import text
-
         await session.execute(
             text(
                 "UPDATE task SET status = 'completed', "
@@ -427,8 +417,6 @@ async def _execute_task_wrapper(
 
     except Exception as e:
         # Update database record with error
-        from sqlalchemy import text
-
         await session.execute(
             text("UPDATE task SET status = 'failed', meta = :meta WHERE id = :task_id"),
             {

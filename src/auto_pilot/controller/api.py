@@ -1,6 +1,7 @@
 """API endpoints for task management."""
 
 import asyncio
+import uuid
 from typing import Any, List, Optional
 
 from fastapi import HTTPException, WebSocket, status
@@ -62,8 +63,6 @@ class TaskController:
         Raises:
             HTTPException: If task creation fails
         """
-        import uuid
-
         task_id = str(uuid.uuid4())
 
         try:
