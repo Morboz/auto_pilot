@@ -1,22 +1,15 @@
 from contextlib import asynccontextmanager
-from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from .config import settings
 from .database import close_db_connection, create_db_and_tables
+from .execution.state_manager import StateManager
 from .llm import BaseLLMAdapter
 from .logger import get_logger, setup_logging
 from .routers import agents, execution, tasks, tools
 from .tools import create_tool_system
 from .tools.builtin import BuiltinToolLoader
-
-# Global LLM adapter instance
-_llm_adapter: Optional[BaseLLMAdapter] = None
-
-# Global tool system instance
-_tool_system = None
-_tool_executor = None
 
 logger = get_logger(__name__)
 
@@ -27,18 +20,16 @@ def init_llm_adapter(adapter: BaseLLMAdapter):
     Args:
         adapter: Configured LLM adapter instance
     """
-    global _llm_adapter
-    _llm_adapter = adapter
-    execution.set_llm_adapter(adapter)
+    app.state.llm_adapter = adapter
 
 
-def get_tool_executor():
+def get_tool_executor(request: Request):
     """Get the global tool executor instance.
 
     Returns:
         ToolExecutor instance or None if not initialized
     """
-    return _tool_executor
+    return getattr(request.app.state, "tool_executor", None)
 
 
 @asynccontextmanager
@@ -47,8 +38,6 @@ async def lifespan(app: FastAPI):
     应用生命周期管理
     启动时初始化数据库，关闭时清理连接
     """
-    global _tool_system, _tool_executor
-
     # 初始化日志
     setup_logging()
 
@@ -60,18 +49,24 @@ async def lifespan(app: FastAPI):
 
     # Initialize tool system
     logger.info("🔧 正在初始化工具系统...")
-    _tool_system = create_tool_system()
-    _tool_executor = _tool_system["executor"]
+    tool_system = create_tool_system()
+    app.state.tool_system = tool_system
+    app.state.tool_executor = tool_system["executor"]
     logger.info("✅ 工具系统就绪")
+
+    # Initialize state manager
+    app.state.state_manager = StateManager()
 
     # Load builtin tools
     logger.info("📦 加载内置工具...")
     loader = BuiltinToolLoader(
-        registry=_tool_system["registry"],
-        executor=_tool_executor,
+        registry=app.state.tool_system["registry"],
+        executor=app.state.tool_executor,
     )
     loader.load_builtin_tools()
-    logger.info(f"✅ 已加载 {len(_tool_system['registry'].list_tools())} 个工具")
+    logger.info(
+        f"✅ 已加载 {len(app.state.tool_system['registry'].list_tools())} 个工具"
+    )
 
     yield
 
@@ -98,28 +93,36 @@ app.include_router(execution.router)
 
 # 健康检查端点
 @app.get("/health")
-async def health_check():
+async def health_check(request: Request):
     """健康检查端点"""
     tool_count = 0
-    if _tool_system and _tool_system.get("registry"):
-        tool_count = len(_tool_system["registry"]._tools)
+    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get(
+        "registry"
+    ):
+        tool_count = len(request.app.state.tool_system["registry"]._tools)
 
     return {
         "status": "healthy",
         "database": "connected",
-        "execution": "enabled" if _llm_adapter else "disabled",
-        "tool_system": "enabled" if _tool_system else "disabled",
+        "execution": "enabled"
+        if getattr(request.app.state, "llm_adapter", None)
+        else "disabled",
+        "tool_system": "enabled"
+        if hasattr(request.app.state, "tool_system")
+        else "disabled",
         "builtin_tools_loaded": tool_count,
     }
 
 
 # API 路由
 @app.get("/")
-async def read_root():
+async def read_root(request: Request):
     # Get tool count
     tool_count = 0
-    if _tool_system and _tool_system.get("registry"):
-        tool_count = len(_tool_system["registry"]._tools)
+    if hasattr(request.app.state, "tool_system") and request.app.state.tool_system.get(
+        "registry"
+    ):
+        tool_count = len(request.app.state.tool_system["registry"]._tools)
 
     return {
         "message": "欢迎使用 AutoPilot API",
@@ -134,7 +137,8 @@ async def read_root():
             "execution": "/execution",
         },
         "features": {
-            "task_execution": _llm_adapter is not None,
+            "task_execution": getattr(request.app.state, "llm_adapter", None)
+            is not None,
             "websocket_streaming": True,
             "builtin_tools": tool_count,
         },

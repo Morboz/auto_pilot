@@ -1,17 +1,21 @@
 """Execution router - Task execution and monitoring endpoints."""
 
 import json
+import uuid
 from typing import List, Optional
+from uuid import UUID
 
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Request,
     WebSocket,
     WebSocketDisconnect,
     status,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from ..database import get_session
 from ..execution import (
@@ -23,38 +27,33 @@ from ..execution import (
     TaskInput,
 )
 from ..llm import BaseLLMAdapter, ToolDefinition
+from ..models import Agent as AgentModel
 from ..models import Task
 
 router = APIRouter(prefix="/execution", tags=["execution"])
 
-# Global instances (in production, use dependency injection)
-_llm_adapter: Optional[BaseLLMAdapter] = None
-_state_manager: Optional[StateManager] = None
 
-
-def get_llm_adapter() -> BaseLLMAdapter:
-    """Get or create LLM adapter instance."""
-    global _llm_adapter
-    if _llm_adapter is None:
+def get_llm_adapter(request: Request) -> BaseLLMAdapter:
+    """Get LLM adapter instance from app state."""
+    if (
+        not hasattr(request.app.state, "llm_adapter")
+        or request.app.state.llm_adapter is None
+    ):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="LLM adapter not initialized",
         )
-    return _llm_adapter
+    return request.app.state.llm_adapter
 
 
-def get_state_manager() -> StateManager:
-    """Get or create state manager instance."""
-    global _state_manager
-    if _state_manager is None:
-        _state_manager = StateManager()
-    return _state_manager
-
-
-def set_llm_adapter(adapter: BaseLLMAdapter) -> None:
-    """Set the global LLM adapter instance."""
-    global _llm_adapter
-    _llm_adapter = adapter
+def get_state_manager(request: Request) -> StateManager:
+    """Get state manager instance from app state."""
+    if not hasattr(request.app.state, "state_manager"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="State manager not initialized",
+        )
+    return request.app.state.state_manager
 
 
 def get_executor(
@@ -107,9 +106,6 @@ async def start_execution(
             - tools: Optional list of tools available to the agent
     """
     try:
-        import uuid
-        from uuid import UUID
-
         # Validate agent_id format
         try:
             agent_uuid = UUID(agent_id)
@@ -144,10 +140,6 @@ async def start_execution(
             tools = [ToolDefinition(**tool_data) for tool_data in request["tools"]]
 
         # Check if agent exists, if not create a default one
-        from sqlmodel import select
-
-        from ..models import Agent as AgentModel
-
         result = await session.execute(select(Task).where(Task.agent_id == agent_uuid))
         agent_exists = await session.execute(
             select(AgentModel).where(AgentModel.id == agent_uuid)
@@ -417,7 +409,8 @@ async def _execute_task_wrapper(
 
         await session.execute(
             text(
-                "UPDATE task SET status = 'completed', result_text = :result WHERE id = :task_id"
+                "UPDATE task SET status = 'completed', "
+                "result_text = :result WHERE id = :task_id"
             ),
             {
                 "task_id": task_id,

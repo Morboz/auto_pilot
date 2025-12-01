@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_session
@@ -16,19 +16,35 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/tools", tags=["tools"])
 
 
+async def get_tool_system(request: Request):
+    """
+    依赖：获取工具系统
+
+    Returns:
+        包含 registry 和 executor 的工具系统字典
+
+    Raises:
+        HTTPException: 如果工具系统未初始化
+    """
+    if not hasattr(
+        request.app.state, "tool_system"
+    ) or not request.app.state.tool_system.get("registry"):
+        raise HTTPException(status_code=503, detail="Tool system not initialized")
+
+    return request.app.state.tool_system
+
+
 @router.get("/", response_model=List[Dict[str, Any]])
-async def list_tools():
+async def list_tools(tool_system=Depends(get_tool_system)):
     """
     获取所有内置工具列表
 
     注意：出于安全考虑，本系统仅支持内置工具，不支持动态注册外部工具
+
+    Args:
+        tool_system: 工具系统依赖
     """
-    from ..main import _tool_system
-
-    if not _tool_system or not _tool_system.get("registry"):
-        raise HTTPException(status_code=503, detail="Tool system not initialized")
-
-    registry = _tool_system["registry"]
+    registry = tool_system["registry"]
     tools = []
 
     for tool_name, tool_def in registry._tools.items():
@@ -60,16 +76,15 @@ async def create_tool():
 
 
 @router.get("/{tool_name}", response_model=Dict[str, Any])
-async def get_tool(tool_name: str):
+async def get_tool(tool_name: str, tool_system=Depends(get_tool_system)):
     """
     根据名称获取工具详情
+
+    Args:
+        tool_name: 工具名称
+        tool_system: 工具系统依赖
     """
-    from ..main import _tool_system
-
-    if not _tool_system or not _tool_system.get("registry"):
-        raise HTTPException(status_code=503, detail="Tool system not initialized")
-
-    registry = _tool_system["registry"]
+    registry = tool_system["registry"]
     tool_def = registry.get_tool(tool_name)
 
     if tool_def is None:
@@ -88,6 +103,7 @@ async def execute_tool(
     tool_name: str,
     request: ToolExecuteRequest,
     session: AsyncSession = Depends(get_session),
+    tool_system=Depends(get_tool_system),
 ):
     """
     执行一个工具（用于调试和手动测试）
@@ -96,20 +112,13 @@ async def execute_tool(
         tool_name: 工具名称
         request: 包含工具参数和超时配置
         session: 数据库会话
+        tool_system: 工具系统依赖
 
     Returns:
         工具执行结果
     """
-    from ..main import _tool_system
-
-    if not _tool_system or not _tool_system.get("registry"):
-        raise HTTPException(status_code=503, detail="Tool system not initialized")
-
-    if not _tool_system or not _tool_system.get("executor"):
-        raise HTTPException(status_code=503, detail="Tool executor not initialized")
-
-    registry = _tool_system["registry"]
-    executor = _tool_system["executor"]
+    registry = tool_system["registry"]
+    executor = tool_system["executor"]
 
     # Get tool definition
     tool_def = registry.get_tool(tool_name)
