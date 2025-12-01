@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
 
     # 启动时执行
     logger.info("🚀 正在启动 AutoPilot API...")
-    logger.info(f"📊 连接数据库: {settings.database_url}")
+    logger.info("📊 连接数据库: %s", settings.database_url)
     await create_db_and_tables()
     logger.info("✅ 数据库就绪")
 
@@ -65,7 +65,7 @@ async def lifespan(app: FastAPI):
     )
     loader.load_builtin_tools()
     logger.info(
-        f"✅ 已加载 {len(app.state.tool_system['registry'].list_tools())} 个工具"
+        "✅ 已加载 %d 个工具", len(app.state.tool_system["registry"].list_tools())
     )
 
     yield

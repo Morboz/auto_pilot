@@ -70,7 +70,7 @@ def setup_logging():
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
 
-    app_logger.info(f"Logging initialized with level: {log_level}")
+    app_logger.info("Logging initialized with level: %s", log_level)
 
 
 def get_logger(name: str) -> logging.Logger:
