@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-from ..types.base import ToolDefinition
+from auto_pilot.tools.types.base import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

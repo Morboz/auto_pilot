@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from ..database import get_session
-from ..models import Agent
+from auto_pilot.database import get_session
+from auto_pilot.models import Agent
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 

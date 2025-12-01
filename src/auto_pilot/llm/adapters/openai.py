@@ -7,12 +7,12 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion
 
-from ..errors import (
+from auto_pilot.llm.errors import (
     AuthenticationError,
     InvalidRequestError,
     map_provider_error,
 )
-from ..types import (
+from auto_pilot.llm.types import (
     GenerationParams,
     GenerationResponse,
     Message,
@@ -26,6 +26,7 @@ from ..types import (
     ToolDefinition,
     ToolExecutionParams,
 )
+
 from .base import BaseLLMAdapter
 
 

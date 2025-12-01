@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict
 
-from ..types.permissions import ToolPermissions
+from auto_pilot.tools.types.permissions import ToolPermissions
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 import aiohttp
 
-from ..types.base import ToolDefinition
+from auto_pilot.tools.types.base import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

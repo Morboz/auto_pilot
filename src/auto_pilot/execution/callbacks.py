@@ -7,7 +7,8 @@ events from the execution loop, enabling features like WebSocket streaming.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-from ..logger import get_logger
+from auto_pilot.logger import get_logger
+
 from .types import EventType, ExecutionEvent, ToolCallRecord
 
 logger = get_logger(__name__)

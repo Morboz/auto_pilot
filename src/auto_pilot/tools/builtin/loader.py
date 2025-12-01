@@ -7,9 +7,9 @@ import pkgutil
 from types import ModuleType
 from typing import Any, List, Type
 
-from ..executor import ToolExecutor
-from ..registry import ToolRegistry
-from ..types.base import ToolDefinition
+from auto_pilot.tools.executor import ToolExecutor
+from auto_pilot.tools.registry import ToolRegistry
+from auto_pilot.tools.types.base import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

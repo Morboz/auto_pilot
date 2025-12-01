@@ -5,7 +5,8 @@ from typing import Any, Optional
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from ..execution import StateManager
+from auto_pilot.execution import StateManager
+
 from .api import TaskController
 from .models import (
     ApiResponse,

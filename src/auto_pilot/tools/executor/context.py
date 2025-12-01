@@ -5,8 +5,8 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from ..types.base import ExecutionContext
-from ..types.permissions import ToolPermissions
+from auto_pilot.tools.types.base import ExecutionContext
+from auto_pilot.tools.types.permissions import ToolPermissions
 
 logger = logging.getLogger(__name__)
 

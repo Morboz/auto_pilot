@@ -4,11 +4,11 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel, Field
 
-from ..errors import ConfigurationError
-from .base import BaseLLMAdapter
-from .claude import ClaudeAdapter
-from .local import LocalAdapter
-from .openai import OpenAIAdapter
+from auto_pilot.llm.adapters.base import BaseLLMAdapter
+from auto_pilot.llm.adapters.claude import ClaudeAdapter
+from auto_pilot.llm.adapters.local import LocalAdapter
+from auto_pilot.llm.adapters.openai import OpenAIAdapter
+from auto_pilot.llm.errors import ConfigurationError
 
 
 class LLMConfig(BaseModel):

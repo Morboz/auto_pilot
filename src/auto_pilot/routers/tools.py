@@ -5,10 +5,10 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import get_session
-from ..logger import get_logger
-from ..models import ToolExecutionLog
-from ..schemas.tools import ToolExecuteRequest, ToolExecuteResponse
+from auto_pilot.database import get_session
+from auto_pilot.logger import get_logger
+from auto_pilot.models import ToolExecutionLog
+from auto_pilot.schemas.tools import ToolExecuteRequest, ToolExecuteResponse
 
 logger = get_logger(__name__)
 

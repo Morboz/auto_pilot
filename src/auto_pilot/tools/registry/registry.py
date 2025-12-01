@@ -4,7 +4,8 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..types.base import ToolDefinition
+from auto_pilot.tools.types.base import ToolDefinition
+
 from .validators import SchemaValidator
 
 logger = logging.getLogger(__name__)

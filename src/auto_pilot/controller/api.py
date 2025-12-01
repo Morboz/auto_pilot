@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 
 from fastapi import HTTPException, WebSocket, status
 
-from ..execution import (
+from auto_pilot.execution import (
     AgentExecutor,
     BaseExecutionCallback,
     ExecutionConfig,
@@ -13,6 +13,7 @@ from ..execution import (
     StateManager,
     TaskInput,
 )
+
 from .models import (
     ApiResponse,
     TaskStartRequest,

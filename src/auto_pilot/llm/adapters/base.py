@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import AsyncIterator, List, Optional
 
-from ..types import (
+from auto_pilot.llm.types import (
     GenerationParams,
     GenerationResponse,
     Message,

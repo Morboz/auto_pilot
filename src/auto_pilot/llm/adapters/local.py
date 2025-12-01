@@ -5,8 +5,8 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 
 from openai import AsyncOpenAI
 
-from ..errors import AuthenticationError, map_provider_error
-from ..types import (
+from auto_pilot.llm.errors import AuthenticationError, map_provider_error
+from auto_pilot.llm.types import (
     GenerationParams,
     GenerationResponse,
     Message,
@@ -20,6 +20,7 @@ from ..types import (
     ToolDefinition,
     ToolExecutionParams,
 )
+
 from .base import BaseLLMAdapter
 
 

@@ -17,8 +17,8 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from ..database import get_session
-from ..execution import (
+from auto_pilot.database import get_session
+from auto_pilot.execution import (
     AgentExecutor,
     BaseExecutionCallback,
     ExecutionConfig,
@@ -26,9 +26,9 @@ from ..execution import (
     StateManager,
     TaskInput,
 )
-from ..llm import BaseLLMAdapter, ToolDefinition
-from ..models import Agent as AgentModel
-from ..models import Task
+from auto_pilot.llm import BaseLLMAdapter, ToolDefinition
+from auto_pilot.models import Agent as AgentModel
+from auto_pilot.models import Task
 
 router = APIRouter(prefix="/execution", tags=["execution"])
 

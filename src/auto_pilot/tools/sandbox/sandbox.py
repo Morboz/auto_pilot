@@ -6,9 +6,9 @@ import logging
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from ..types.base import ToolDefinition
-from ..types.permissions import ResourceLimits, ToolPermissions
-from ..types.sandbox import ResourceUsage, SandboxConfig, SandboxResult
+from auto_pilot.tools.types.base import ToolDefinition
+from auto_pilot.tools.types.permissions import ResourceLimits, ToolPermissions
+from auto_pilot.tools.types.sandbox import ResourceUsage, SandboxConfig, SandboxResult
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +300,8 @@ class ResourceMonitor:
             if memory_usage_mb > limits.max_memory_mb:
                 return (
                     False,
-                    f"Memory usage {memory_usage_mb:.1f}MB exceeds limit {limits.max_memory_mb}MB",
+                    f"Memory usage {memory_usage_mb:.1f}MB "
+                    f"exceeds limit {limits.max_memory_mb}MB",
                 )
 
             # Check CPU
@@ -308,7 +309,8 @@ class ResourceMonitor:
             if cpu_percent > limits.max_cpu_percent:
                 return (
                     False,
-                    f"CPU usage {cpu_percent:.1f}% exceeds limit {limits.max_cpu_percent}%",
+                    f"CPU usage {cpu_percent:.1f}% "
+                    f"exceeds limit {limits.max_cpu_percent}%",
                 )
 
             return True, None

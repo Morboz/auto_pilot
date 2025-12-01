@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from ..types.permissions import (
+from auto_pilot.tools.types.permissions import (
     FileSystemPermission,
     NetworkPermission,
     ResourceLimits,

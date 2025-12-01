@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..types.permissions import SecurityPolicy, ToolPermissions
+from auto_pilot.tools.types.permissions import SecurityPolicy, ToolPermissions
 
 logger = logging.getLogger(__name__)
 

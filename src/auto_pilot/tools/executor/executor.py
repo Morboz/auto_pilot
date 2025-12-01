@@ -5,10 +5,15 @@ import logging
 import time
 from typing import Any, Callable, Dict, List, Optional
 
-from ..permissions import PermissionManager, SecurityPolicyEnforcer
-from ..registry import ToolRegistry
-from ..sandbox import ToolSandbox
-from ..types.base import ExecutionContext, ExecutionResult, ToolDefinition
+from auto_pilot.tools.permissions import PermissionManager, SecurityPolicyEnforcer
+from auto_pilot.tools.registry import ToolRegistry
+from auto_pilot.tools.sandbox import ToolSandbox
+from auto_pilot.tools.types.base import (
+    ExecutionContext,
+    ExecutionResult,
+    ToolDefinition,
+)
+
 from .context import ExecutionContextManager
 from .metrics import ExecutionMetrics
 from .retry import RetryManager

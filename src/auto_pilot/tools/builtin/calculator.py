@@ -5,7 +5,7 @@ import logging
 import operator
 from typing import Any, Dict
 
-from ..types.base import ToolDefinition
+from auto_pilot.tools.types.base import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,10 @@ class CalculatorTool:
         return ToolDefinition(
             metadata=ToolMetadata(
                 name="calculator",
-                description="Evaluate mathematical expressions safely. Supports +, -, *, /, ** (power), and parentheses.",
+                description=(
+                    "Evaluate mathematical expressions safely. "
+                    "Supports +, -, *, /, ** (power), and parentheses."
+                ),
                 category="utilities",
                 tags=["math", "calculator", "computation"],
                 version="1.0.0",

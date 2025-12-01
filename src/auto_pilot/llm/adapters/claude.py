@@ -7,13 +7,13 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
 
-from ...logger import get_logger
-from ..errors import (
+from auto_pilot.llm.adapters.base import BaseLLMAdapter
+from auto_pilot.llm.errors import (
     AuthenticationError,
     InvalidRequestError,
     map_provider_error,
 )
-from ..types import (
+from auto_pilot.llm.types import (
     GenerationParams,
     GenerationResponse,
     ModelCapabilities,
@@ -26,10 +26,10 @@ from ..types import (
     ToolDefinition,
     ToolExecutionParams,
 )
-from ..types import (
+from auto_pilot.llm.types import (
     Message as InternalMessage,
 )
-from .base import BaseLLMAdapter
+from auto_pilot.logger import get_logger
 
 logger = get_logger(__name__)
 
